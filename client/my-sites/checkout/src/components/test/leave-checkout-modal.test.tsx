@@ -23,6 +23,13 @@ jest.mock( 'calypso/state/analytics/actions', () => ( {
 	recordTracksEvent: () => ( { type: 'NOOP_RECORD_TRACKS_EVENT' } ),
 } ) );
 
+jest.mock( '@automattic/calypso-config', () => {
+	const actual = jest.requireActual( '@automattic/calypso-config' );
+	return { ...actual, __esModule: true, default: actual.default, isEnabled: jest.fn() };
+} );
+
+import { isEnabled } from '@automattic/calypso-config';
+import { CheckoutHostProvider } from '@automattic/checkout';
 import {
 	createShoppingCartManagerClient,
 	getEmptyResponseCart,
@@ -36,6 +43,7 @@ import useCartKey from '../../../use-cart-key';
 import useValidCheckoutBackUrl from '../../hooks/use-valid-checkout-back-url';
 import { leaveCheckout } from '../../lib/leave-checkout';
 import { useCheckoutLeaveModal } from '../leave-checkout-modal';
+import type { CheckoutHostContext } from '@automattic/checkout';
 import type {
 	CartKey,
 	GetCart,
@@ -45,6 +53,8 @@ import type {
 	SetCart,
 } from '@automattic/shopping-cart';
 import type { ReactNode } from 'react';
+
+const mockIsEnabled = isEnabled as jest.MockedFunction< typeof isEnabled >;
 
 const NEW_SITE_CART_KEY: CartKey = 1234;
 const NEW_SITE_SLUG = 'mynewsite.wordpress.com';
@@ -412,6 +422,105 @@ describe( 'useCheckoutLeaveModal.clickStepBack', () => {
 		expect( leaveCheckout ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				forceCheckoutBackUrl: 'https://mynewsite.wordpress.com/setup/onboarding/plans',
+			} )
+		);
+	} );
+} );
+
+describe( 'useCheckoutLeaveModal with a checkout host mounted', () => {
+	const host: CheckoutHostContext = {
+		siteId: 1234,
+		navigate: jest.fn(),
+		close: jest.fn(),
+		onComplete: jest.fn(),
+		notices: { error: jest.fn(), info: jest.fn() },
+		urlParams: new URLSearchParams( '' ),
+		recordEvent: jest.fn(),
+	};
+
+	function buildHostWrapper( client: ReturnType< typeof createShoppingCartManagerClient > ) {
+		const Wrapper = buildWrapper( client );
+		return function HostWrapper( { children }: { children: ReactNode } ) {
+			return (
+				<Wrapper>
+					<CheckoutHostProvider value={ host }>{ children }</CheckoutHostProvider>
+				</Wrapper>
+			);
+		};
+	}
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		( useCartKey as jest.Mock ).mockReturnValue( NEW_SITE_CART_KEY );
+		( useValidCheckoutBackUrl as jest.Mock ).mockReturnValue(
+			'https://mynewsite.wordpress.com/setup/onboarding/plans'
+		);
+		mockIsEnabled.mockImplementation( ( flag: string ) => flag === 'checkout/host-context' );
+	} );
+
+	it( 'closes through the host, telling it where checkout wanted to go', async () => {
+		const { getCart, setCart } = createFakeCartBackend( { [ NEW_SITE_CART_KEY ]: [] } );
+		const client = createShoppingCartManagerClient( { getCart, setCart } );
+
+		const { result } = renderHook( () => useCheckoutLeaveModal( { siteUrl: NEW_SITE_SLUG } ), {
+			wrapper: buildHostWrapper( client ),
+		} );
+
+		await act( async () => {
+			result.current.clickStepBack( 'https://mynewsite.wordpress.com/setup/onboarding/domains' );
+		} );
+
+		expect( host.close ).toHaveBeenCalledWith( {
+			destinationUrl: 'https://mynewsite.wordpress.com/setup/onboarding/domains',
+			cartWasEmptied: false,
+		} );
+		expect( leaveCheckout ).not.toHaveBeenCalled();
+	} );
+
+	it( 'tells the host when the user emptied the cart on the way out', async () => {
+		const { getCart, setCart } = createFakeCartBackend( {
+			[ NEW_SITE_CART_KEY ]: [ domainProduct, planProduct ],
+		} );
+		const client = createShoppingCartManagerClient( { getCart, setCart } );
+
+		const { result } = renderHook( () => useCheckoutLeaveModal( { siteUrl: NEW_SITE_SLUG } ), {
+			wrapper: buildHostWrapper( client ),
+		} );
+
+		await waitFor( () =>
+			expect(
+				client.forCartKey( NEW_SITE_CART_KEY ).getState().responseCart.products
+			).toHaveLength( 2 )
+		);
+
+		await act( async () => {
+			await result.current.clearCartAndLeave();
+		} );
+
+		expect( host.close ).toHaveBeenCalledWith(
+			expect.objectContaining( { cartWasEmptied: true } )
+		);
+		expect( leaveCheckout ).not.toHaveBeenCalled();
+	} );
+
+	it( 'keeps leaving the legacy way when the flag is off', async () => {
+		mockIsEnabled.mockReturnValue( false );
+
+		const { getCart, setCart } = createFakeCartBackend( { [ NEW_SITE_CART_KEY ]: [] } );
+		const client = createShoppingCartManagerClient( { getCart, setCart } );
+
+		const { result } = renderHook( () => useCheckoutLeaveModal( { siteUrl: NEW_SITE_SLUG } ), {
+			wrapper: buildHostWrapper( client ),
+		} );
+
+		await act( async () => {
+			result.current.clickStepBack( 'https://mynewsite.wordpress.com/setup/onboarding/domains' );
+		} );
+
+		expect( host.close ).not.toHaveBeenCalled();
+		expect( leaveCheckout ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				forceCheckoutBackUrl: 'https://mynewsite.wordpress.com/setup/onboarding/domains',
 			} )
 		);
 	} );

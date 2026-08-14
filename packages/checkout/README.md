@@ -3,8 +3,28 @@
 The host-agnostic WordPress.com checkout: the UI and logic that render identically inside any
 checkout host — a Calypso modal, a Dashboard modal, or the legacy full-page `/checkout` route.
 
-The package is being filled in incrementally; it starts as a skeleton plus the import boundary
-described below.
+The package is being filled in incrementally.
+
+## Host context
+
+Everything irreducibly host-specific enters through one injected React context. A host builds a
+`CheckoutHostContext` — the site being bought for, how to navigate, how to close, how to show a
+notice, the URL parameters, how to record an event, and what to do when the purchase completes —
+and mounts it:
+
+```tsx
+import { CheckoutHostProvider, useCheckoutHost } from '@automattic/checkout';
+
+<CheckoutHostProvider value={ host }>{ checkout }</CheckoutHostProvider>;
+```
+
+Components read it with `useCheckoutHost()`, which throws when no host is mounted: a checkout with
+nowhere to navigate and no way to close cannot recover. `useOptionalCheckoutHost()` returns `null`
+instead, for call sites that still have a legacy fallback during the migration.
+
+Site _facts_ — atomic, jetpack, private — are not part of the context. They are derived from
+`siteId` through the shared site queries, so there is one source of truth for site data. Genuinely
+global concerns (feature flags, analytics transport, i18n) stay global.
 
 ## Import boundary
 

@@ -1,5 +1,6 @@
 import config from '@automattic/calypso-config';
 import { StripeHookProvider } from '@automattic/calypso-stripe';
+import { CheckoutHostProvider } from '@automattic/checkout';
 import { CheckoutErrorBoundary } from '@automattic/composite-checkout';
 import { useTranslate } from 'i18n-calypso';
 import { useEffect } from 'react';
@@ -11,6 +12,8 @@ import { getCurrentUserLocale } from 'calypso/state/current-user/selectors';
 import { getSelectedSiteId } from 'calypso/state/ui/selectors';
 import CalypsoShoppingCartProvider from './calypso-shopping-cart-provider';
 import CheckoutMain from './src/components/checkout-main';
+import useCalypsoCheckoutHost from './src/hooks/use-calypso-checkout-host';
+import useCheckoutSiteSlug from './src/hooks/use-checkout-site-slug';
 import { logStashLoadErrorEvent } from './src/lib/analytics';
 import type { SitelessCheckoutType } from '@automattic/wpcom-checkout';
 
@@ -100,6 +103,16 @@ export default function CheckoutMainWrapper( {
 		}
 	}
 
+	const checkoutSiteSlug = useCheckoutSiteSlug( {
+		siteSlug,
+		sitelessCheckoutType,
+		jetpackSiteSlug,
+	} );
+	const checkoutHost = useCalypsoCheckoutHost( {
+		siteId: selectedSiteId,
+		siteSlug: checkoutSiteSlug,
+	} );
+
 	return (
 		<>
 			<CheckoutErrorBoundary
@@ -108,28 +121,30 @@ export default function CheckoutMainWrapper( {
 			>
 				<CalypsoShoppingCartProvider shouldShowPersistentErrors>
 					<StripeHookProvider fetchStripeConfiguration={ getStripeConfiguration } locale={ locale }>
-						<CheckoutMain
-							siteSlug={ siteSlug }
-							siteId={ selectedSiteId }
-							productAliasFromUrl={ productAliasFromUrl }
-							productSourceFromUrl={ productSourceFromUrl }
-							purchaseId={ purchaseId }
-							couponCode={ couponCode }
-							redirectTo={ redirectTo }
-							feature={ selectedFeature }
-							plan={ plan }
-							isComingFromUpsell={ isComingFromUpsell }
-							sitelessCheckoutType={ sitelessCheckoutType }
-							isLoggedOutCart={ isLoggedOutCart }
-							isNoSiteCart={ isNoSiteCart }
-							isGiftPurchase={ isGiftPurchase }
-							jetpackSiteSlug={ jetpackSiteSlug }
-							jetpackPurchaseToken={ jetpackPurchaseToken }
-							isUserComingFromLoginForm={ isUserComingFromLoginForm }
-							connectAfterCheckout={ connectAfterCheckout }
-							fromSiteSlug={ fromSiteSlug }
-							adminUrl={ adminUrl }
-						/>
+						<CheckoutHostProvider value={ checkoutHost }>
+							<CheckoutMain
+								siteSlug={ siteSlug }
+								siteId={ selectedSiteId }
+								productAliasFromUrl={ productAliasFromUrl }
+								productSourceFromUrl={ productSourceFromUrl }
+								purchaseId={ purchaseId }
+								couponCode={ couponCode }
+								redirectTo={ redirectTo }
+								feature={ selectedFeature }
+								plan={ plan }
+								isComingFromUpsell={ isComingFromUpsell }
+								sitelessCheckoutType={ sitelessCheckoutType }
+								isLoggedOutCart={ isLoggedOutCart }
+								isNoSiteCart={ isNoSiteCart }
+								isGiftPurchase={ isGiftPurchase }
+								jetpackSiteSlug={ jetpackSiteSlug }
+								jetpackPurchaseToken={ jetpackPurchaseToken }
+								isUserComingFromLoginForm={ isUserComingFromLoginForm }
+								connectAfterCheckout={ connectAfterCheckout }
+								fromSiteSlug={ fromSiteSlug }
+								adminUrl={ adminUrl }
+							/>
+						</CheckoutHostProvider>
 					</StripeHookProvider>
 				</CalypsoShoppingCartProvider>
 			</CheckoutErrorBoundary>

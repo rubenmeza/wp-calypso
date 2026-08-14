@@ -4,6 +4,7 @@ import { leaveCheckout } from 'calypso/my-sites/checkout/src/lib/leave-checkout'
 import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import { useSelector } from 'calypso/state';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
+import { useCheckoutHostNavigate } from './use-checkout-host-bridge';
 import useValidCheckoutBackUrl from './use-valid-checkout-back-url';
 import type { RemoveProductFromCart, ResponseCart } from '@automattic/shopping-cart';
 
@@ -21,6 +22,7 @@ export default function useRemoveFromCartAndRedirect(
 
 	// In some cases, the cloud.jetpack.com/pricing page sends a `checkoutBackUrl` url query param to checkout.
 	const forceCheckoutBackUrl = useValidCheckoutBackUrl( siteSlug );
+	const hostNavigate = useCheckoutHostNavigate();
 
 	const redirectDueToEmptyCart = useCallback( () => {
 		leaveCheckout( {
@@ -30,11 +32,13 @@ export default function useRemoveFromCartAndRedirect(
 			previousPath: customizedPreviousPath || previousPath,
 			tracksEvent: 'calypso_empty_cart_redirect',
 			userHasClearedCart: true,
+			navigate: hostNavigate,
 		} );
 	}, [
 		createUserAndSiteBeforeTransaction,
 		siteSlug,
 		forceCheckoutBackUrl,
+		hostNavigate,
 		previousPath,
 		customizedPreviousPath,
 	] );
@@ -58,11 +62,15 @@ export default function useRemoveFromCartAndRedirect(
 						// Don't turn off isRemovingProductFromCart if we are redirecting so that the loading page remains active.
 						return cart;
 					}
-					isMounted.current && setIsRemovingFromCart( false );
+					if ( isMounted.current ) {
+						setIsRemovingFromCart( false );
+					}
 					return cart;
 				} )
 				.catch( ( error ) => {
-					isMounted.current && setIsRemovingFromCart( false );
+					if ( isMounted.current ) {
+						setIsRemovingFromCart( false );
+					}
 					// Re-throw error so that the consumer of this action can treat it the same as removeProductFromCart
 					throw error;
 				} );

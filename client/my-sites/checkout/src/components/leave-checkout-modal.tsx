@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import getPreviousRoute from '../../../../state/selectors/get-previous-route';
 import useCartKey from '../../use-cart-key';
+import { useCheckoutHostClose } from '../hooks/use-checkout-host-bridge';
 import useValidCheckoutBackUrl from '../hooks/use-valid-checkout-back-url';
 import { leaveCheckout } from '../lib/leave-checkout';
 
@@ -37,6 +38,7 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 	// every checkout page load.
 	const cartManagerClient = useShoppingCartManagerClient();
 	const previousPath = useSelector( getPreviousRoute );
+	const hostClose = useCheckoutHostClose();
 
 	const closeAndLeave = ( options?: {
 		userHasClearedCart?: boolean;
@@ -48,6 +50,15 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 			recordTracksEvent( 'calypso_masterbar_checkout_close_modal_submitted', {
 				user_has_cleared_cart: userHasClearedCart,
 			} );
+		}
+		// Checkout passes on only the destination it picked itself. The default
+		// back URL and the route the user arrived from belong to the host.
+		if ( hostClose ) {
+			hostClose( {
+				destinationUrl: options?.forceBackUrl ?? stepBackUrl,
+				cartWasEmptied: userHasClearedCart,
+			} );
+			return;
 		}
 		leaveCheckout( {
 			siteSlug: siteUrl,
