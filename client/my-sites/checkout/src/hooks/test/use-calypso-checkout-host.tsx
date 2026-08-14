@@ -98,6 +98,34 @@ describe( 'useCalypsoCheckoutHost', () => {
 		);
 	} );
 
+	it( 'keeps the same host object across re-renders', () => {
+		// The host is a context value: a new object every render would re-render
+		// every checkout component reading it.
+		const { result, rerender } = renderHook( () =>
+			useCalypsoCheckoutHost( { siteId: 9, siteSlug: 'example.wordpress.com' } )
+		);
+		const first = result.current;
+
+		rerender();
+		rerender();
+
+		expect( result.current ).toBe( first );
+	} );
+
+	it( 'gives a new host when the site changes', () => {
+		const { result, rerender } = renderHook(
+			( { siteId }: { siteId: number } ) =>
+				useCalypsoCheckoutHost( { siteId, siteSlug: 'example.wordpress.com' } ),
+			{ initialProps: { siteId: 9 } }
+		);
+		const first = result.current;
+
+		rerender( { siteId: 10 } );
+
+		expect( result.current ).not.toBe( first );
+		expect( result.current.siteId ).toBe( 10 );
+	} );
+
 	describe( 'close', () => {
 		it( 'leaves checkout with the default back URL and the host’s navigate', () => {
 			mockUseValidCheckoutBackUrl.mockReturnValue( 'https://cloud.jetpack.com/pricing/' );
