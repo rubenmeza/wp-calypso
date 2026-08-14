@@ -35,6 +35,7 @@
 		"checkout/checkout-version": true,
 		"checkout/google-pay": true,
 		"checkout/host-context": true,
+		"checkout/query-payment-methods": true,
 		"checkout/stripe-upi": true,
 		"ciab/allow-domain-features": true,
 		"ciab/custom-branding": true,

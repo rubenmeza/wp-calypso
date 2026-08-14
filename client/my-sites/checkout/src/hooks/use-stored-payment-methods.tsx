@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslate } from 'i18n-calypso';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import wp from 'calypso/lib/wp';
 import type { StoredPaymentMethod } from '@automattic/wpcom-checkout';
 import type { ComponentType } from 'react';
@@ -21,6 +21,54 @@ const fetchPaymentMethods = (
 
 const requestPaymentMethodDeletion = ( id: StoredPaymentMethod[ 'stored_details_id' ] ) =>
 	wp.req.post( { path: '/me/stored-cards/' + id + '/delete' } );
+
+/**
+ * What a card-list response means, shared by both reads so they cannot drift:
+ * anything that is not an array is no cards plus an error, never a value
+ * handed on to callers that will call `.length` or `.filter` on it.
+ */
+export function readStoredPaymentMethods( {
+	data,
+	queryError,
+	deletionError,
+	isForBusiness,
+	translate,
+}: {
+	data: unknown;
+	queryError?: Error | null;
+	deletionError?: Error | null;
+	isForBusiness?: boolean | null;
+	translate: ReturnType< typeof useTranslate >;
+} ): { paymentMethods: StoredPaymentMethod[]; error: string | null } {
+	const isDataValid = Array.isArray( data );
+	const paymentMethods = ( () => {
+		if ( ! isDataValid ) {
+			return [];
+		}
+		return isForBusiness
+			? ( data as StoredPaymentMethod[] ).filter(
+					( method ) => method?.tax_location?.is_for_business === isForBusiness
+			  )
+			: ( data as StoredPaymentMethod[] );
+	} )();
+
+	const error = ( () => {
+		if ( deletionError ) {
+			return deletionError.message;
+		}
+		if ( queryError ) {
+			return queryError.message;
+		}
+		if ( data !== undefined && ! isDataValid ) {
+			return translate( 'There was a problem loading your stored payment methods.', {
+				textOnly: true,
+			} );
+		}
+		return null;
+	} )();
+
+	return { paymentMethods, error };
+}
 
 export interface StoredPaymentMethodsState {
 	paymentMethods: StoredPaymentMethod[];
@@ -54,11 +102,20 @@ export function useStoredPaymentMethods( {
 	expired = false,
 	isLoggedOut = false,
 	isForBusiness = false,
+	enabled = true,
 }: {
 	/**
 	 * If there is no logged-in user, we will not try to fetch anything.
 	 */
 	isLoggedOut?: boolean;
+
+	/**
+	 * False to skip the fetch entirely, for callers that read the card list
+	 * from somewhere else.
+	 *
+	 * Defaults to true.
+	 */
+	enabled?: boolean;
 
 	/**
 	 * The type of payment method to fetch.
@@ -88,20 +145,12 @@ export function useStoredPaymentMethods( {
 	const { data, isLoading, error } = useQuery< StoredPaymentMethod[], Error >( {
 		queryKey,
 		queryFn: () => fetchPaymentMethods( type, expired ),
-		enabled: ! isLoggedOut,
+		enabled: enabled && ! isLoggedOut,
+		// Saved payment details stay in memory, never in localStorage.
+		meta: { persist: false },
 	} );
 
 	const translate = useTranslate();
-	const isDataValid = Array.isArray( data );
-	const filteredPaymentMethods = useMemo( () => {
-		if ( ! isDataValid ) {
-			return [];
-		}
-
-		return isForBusiness
-			? data.filter( ( method ) => method?.tax_location?.is_for_business === isForBusiness )
-			: data;
-	}, [ isForBusiness, data, isDataValid ] );
 
 	const mutation = useMutation<
 		StoredPaymentMethod[ 'stored_details_id' ],
@@ -113,39 +162,36 @@ export function useStoredPaymentMethods( {
 			queryClient.invalidateQueries( {
 				queryKey: [ storedPaymentMethodsQueryKey ],
 			} );
+			queryClient.invalidateQueries( {
+				queryKey: [ 'me', 'payment-methods' ],
+			} );
 		},
 	} );
 
+	const { mutate: mutateDeletion } = mutation;
 	const deletePaymentMethod = useCallback< StoredPaymentMethodsState[ 'deletePaymentMethod' ] >(
 		( id ) => {
 			return new Promise( ( resolve, reject ) => {
-				mutation.mutate( id, {
+				mutateDeletion( id, {
 					onSuccess: () => resolve(),
 					onError: ( error ) => reject( error ),
 				} );
 			} );
 		},
-		[ mutation ]
+		[ mutateDeletion ]
 	);
 
-	const errorMessage = ( () => {
-		if ( mutation.error ) {
-			return mutation.error.message;
-		}
-		if ( error ) {
-			return error.message;
-		}
-		if ( data !== undefined && ! isDataValid ) {
-			return translate( 'There was a problem loading your stored payment methods.', {
-				textOnly: true,
-			} );
-		}
-		return null;
-	} )();
+	const { paymentMethods, error: errorMessage } = readStoredPaymentMethods( {
+		data,
+		queryError: error,
+		deletionError: mutation.error,
+		isForBusiness,
+		translate,
+	} );
 
 	return {
-		paymentMethods: filteredPaymentMethods,
-		isLoading: isLoggedOut ? false : isLoading,
+		paymentMethods,
+		isLoading: isLoggedOut || ! enabled ? false : isLoading,
 		isDeleting: mutation.isPending,
 		error: errorMessage,
 		deletePaymentMethod,

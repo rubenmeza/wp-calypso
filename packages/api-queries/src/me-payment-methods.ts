@@ -45,6 +45,10 @@ export const userPaymentMethodsQuery = ( {
 	queryOptions( {
 		queryKey: [ 'me', 'payment-methods', type, expired ],
 		queryFn: () => fetchUserPaymentMethods( type, expired ),
+		// Saved payment details stay in memory. They carry the cardholder name,
+		// last four digits and billing location, none of which should outlive the
+		// session in localStorage.
+		meta: { persist: false },
 		select: ( data ) =>
 			Array.isArray( data ) && isForBusiness
 				? data.filter( ( method ) => method?.tax_location?.is_for_business === isForBusiness )

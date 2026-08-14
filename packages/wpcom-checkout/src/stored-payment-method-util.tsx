@@ -66,7 +66,7 @@ export interface StoredPaymentMethodBase {
 	source: string | null;
 	original_stored_details_id: string;
 	is_rechargeable: boolean;
-	payment_type: string;
+	payment_type: string | null;
 	is_expired: boolean;
 	is_backup: boolean;
 	tax_location: StoredPaymentMethodTaxLocation | null;

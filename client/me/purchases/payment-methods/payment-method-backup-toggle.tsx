@@ -45,17 +45,22 @@ export default function PaymentMethodBackupToggle( { card }: { card: StoredPayme
 		onSuccess: ( data ) => {
 			queryClient.setQueryData( [ 'payment-method-backup-toggle', storedDetailsId ], data );
 
-			// Invalidate queries made by `useStoredPaymentMethods`.
+			// Invalidate queries made by `useStoredPaymentMethods`, and the shared
+			// query checkout reads while the two live side by side.
 			queryClient.invalidateQueries( {
 				queryKey: [ storedPaymentMethodsQueryKey ],
 			} );
+			queryClient.invalidateQueries( {
+				queryKey: [ 'me', 'payment-methods' ],
+			} );
 		},
 	} );
+	const { mutate: mutateIsBackup } = mutation;
 	const toggleIsBackup = useCallback(
 		( isChecked: boolean ) => {
-			mutation.mutate( isChecked );
+			mutateIsBackup( isChecked );
 		},
-		[ mutation ]
+		[ mutateIsBackup ]
 	);
 	if ( isLoading ) {
 		return (

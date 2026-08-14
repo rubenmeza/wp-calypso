@@ -24,8 +24,8 @@ import isAtomicSite from 'calypso/state/selectors/is-site-automated-transfer';
 import { isJetpackSite, getSiteId } from 'calypso/state/sites/selectors';
 import { setSelectedSiteId } from 'calypso/state/ui/actions';
 import { getSelectedSite, getSelectedSiteId } from 'calypso/state/ui/selectors';
+import { useCheckoutStoredPaymentMethods } from '../src/hooks/use-checkout-stored-payment-methods';
 import useCountryList from '../src/hooks/use-country-list';
-import { useStoredPaymentMethods } from '../src/hooks/use-stored-payment-methods';
 import { updateCartContactDetailsForCheckout } from '../src/lib/update-cart-contact-details-for-checkout';
 import { BEFORE_SUBMIT } from './constants';
 import Content from './content';
@@ -139,7 +139,7 @@ function PurchaseModalWrapper( props: PurchaseModalProps ) {
 	const { responseCart, updateLocation, replaceProductsInCart, isPendingUpdate, applyCoupon } =
 		useShoppingCart( cartKey );
 	const selectedSite = useSelector( getSelectedSite );
-	const paymentMethodsState = useStoredPaymentMethods( {
+	const paymentMethodsState = useCheckoutStoredPaymentMethods( {
 		type: 'card',
 	} );
 	const countries = useCountryList();
