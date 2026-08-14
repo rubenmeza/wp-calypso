@@ -3,7 +3,7 @@ import { addQueryArgs, getQueryArg } from '@wordpress/url';
 import debugFactory from 'debug';
 import { dashboardOrigins } from 'calypso/dashboard/utils/link';
 import { recordTracksEvent } from 'calypso/lib/analytics/tracks';
-import { navigate } from 'calypso/lib/navigate';
+import { navigate as calypsoNavigate } from 'calypso/lib/navigate';
 import {
 	clearSignupDestinationCookie,
 	getSignupCompleteFlowName,
@@ -47,6 +47,7 @@ export const leaveCheckout = ( {
 	tracksEvent,
 	createUserAndSiteBeforeTransaction,
 	userHasClearedCart = false,
+	navigate = calypsoNavigate,
 }: {
 	siteSlug?: string;
 	forceCheckoutBackUrl?: string;
@@ -54,6 +55,11 @@ export const leaveCheckout = ( {
 	tracksEvent: string;
 	createUserAndSiteBeforeTransaction?: boolean;
 	userHasClearedCart?: boolean;
+	/**
+	 * How to reach the close destination. Defaults to Calypso's router; the
+	 * host context supplies its own so navigation stays on one choke point.
+	 */
+	navigate?: ( url: string ) => void;
 } ): void => {
 	recordTracksEvent( tracksEvent );
 	debug( 'leaving checkout with args', {

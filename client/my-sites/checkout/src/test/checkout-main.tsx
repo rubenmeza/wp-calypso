@@ -93,6 +93,32 @@ describe( 'CheckoutMain', () => {
 		} );
 	} );
 
+	it( 'renders the same checkout, and reports through the host, when a host is mounted', async () => {
+		const checkoutHost = {
+			siteId: 1234,
+			navigate: jest.fn(),
+			close: jest.fn(),
+			onComplete: jest.fn(),
+			notices: { error: jest.fn(), info: jest.fn() },
+			urlParams: new URLSearchParams( '' ),
+			recordEvent: jest.fn(),
+		};
+
+		render(
+			<MockCheckout
+				initialCart={ initialCart }
+				setCart={ mockSetCartEndpoint }
+				checkoutHost={ checkoutHost }
+			/>
+		);
+
+		await waitFor( () => {
+			expect( screen.getAllByText( 'WordPress.com Personal' ).length ).toBeGreaterThan( 0 );
+		} );
+		expect( checkoutHost.notices.error ).not.toHaveBeenCalled();
+		expect( errorNotice ).not.toHaveBeenCalled();
+	} );
+
 	it( 'renders the line items with prices when logged-out', async () => {
 		const cartChanges = { products: [] };
 		render(

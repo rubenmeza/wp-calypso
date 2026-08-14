@@ -86,14 +86,19 @@ import SitePreview from 'calypso/my-sites/customer-home/cards/features/site-prev
 import useOneDollarOfferTrack from 'calypso/my-sites/plans/hooks/use-onedollar-offer-track';
 import { siteHasPaidPlan } from 'calypso/signup/steps/site-picker/site-picker-submit';
 import { useDispatch as useReduxDispatch, useSelector } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { errorNotice, removeNotice } from 'calypso/state/notices/actions';
+import { removeNotice } from 'calypso/state/notices/actions';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
 import { getIsOnboardingAffiliateFlow } from 'calypso/state/signup/flow/selectors';
 import { getWpComDomainBySiteId } from 'calypso/state/sites/domains/selectors';
 import { getSelectedSite } from 'calypso/state/ui/selectors';
 import { useUpdateCachedContactDetails } from '../hooks/use-cached-contact-details';
 import { useCheckoutHelpCenter } from '../hooks/use-checkout-help-center';
+import {
+	useCheckoutHostNavigate,
+	useCheckoutNotices,
+	useCheckoutRecordEvent,
+	useCheckoutUrlParams,
+} from '../hooks/use-checkout-host-bridge';
 import useCouponFieldState from '../hooks/use-coupon-field-state';
 import { validateContactDetails } from '../lib/contact-validation';
 import { updateCartContactDetailsForCheckout } from '../lib/update-cart-contact-details-for-checkout';
@@ -470,7 +475,10 @@ export default function CheckoutMainContent( {
 		[ submitButtonSlotEl ]
 	);
 
-	const searchParams = new URLSearchParams( window.location.search );
+	const searchParams = useCheckoutUrlParams();
+	const notices = useCheckoutNotices();
+	const recordEvent = useCheckoutRecordEvent();
+	const hostNavigate = useCheckoutHostNavigate();
 	const isOnboardingFlowCheckout = searchParams.get( 'flow' ) === ONBOARDING_FLOW;
 	const showProgress = useShowOnboardingProgress( isOnboardingFlowCheckout );
 	const forceCheckoutBackUrlDomains = useValidCheckoutBackUrl(
@@ -585,6 +593,7 @@ export default function CheckoutMainContent( {
 			forceCheckoutBackUrl,
 			previousPath: customizedPreviousPath || previousPath,
 			tracksEvent: 'calypso_checkout_composite_empty_cart_clicked',
+			navigate: hostNavigate,
 		} );
 
 	const { transactionStatus } = useTransactionStatus();
@@ -932,7 +941,7 @@ export default function CheckoutMainContent( {
 															{ textOnly: true }
 													  ) }`
 													: vatError.message;
-											reduxDispatch( errorNotice( vatErrorMessage, { id: 'vat_info_notice' } ) );
+											notices.error( vatErrorMessage, { id: 'vat_info_notice' } );
 										}
 										return false;
 									}
@@ -962,12 +971,10 @@ export default function CheckoutMainContent( {
 										prepareDomainContactValidationRequest( contactInfo )
 									);
 
-									reduxDispatch(
-										recordTracksEvent( 'calypso_checkout_composite_step_complete', {
-											step: 1,
-											step_name: 'contact-form',
-										} )
-									);
+									recordEvent( 'calypso_checkout_composite_step_complete', {
+										step: 1,
+										step_name: 'contact-form',
+									} );
 								}
 								return validationResponse;
 							} }
