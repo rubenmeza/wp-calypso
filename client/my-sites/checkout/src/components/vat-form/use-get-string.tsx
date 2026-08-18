@@ -1,6 +1,6 @@
 import { CALYPSO_CONTACT } from '@automattic/urls';
 import { TranslateResult, useTranslate } from 'i18n-calypso';
-import { useTaxName } from 'calypso/my-sites/checkout/src/hooks/use-country-list';
+import { useCheckoutTaxName } from 'calypso/my-sites/checkout/src/hooks/use-checkout-country-list';
 import { useDispatch } from 'calypso/state';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 
@@ -19,7 +19,7 @@ type VatStringsValue = {
 export function useGetVatFormString( countryCode: string | undefined ) {
 	const translate = useTranslate();
 	const reduxDispatch = useDispatch();
-	const untypedTaxName = useTaxName( countryCode ?? 'GB', 'en' );
+	const untypedTaxName = useCheckoutTaxName( countryCode ?? 'GB', 'en' );
 	const taxName: TaxName | undefined = TAX_NAMES.find( ( taxName ) => taxName === untypedTaxName );
 
 	const contactSupportLink = (

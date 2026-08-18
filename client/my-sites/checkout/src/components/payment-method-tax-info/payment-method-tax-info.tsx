@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import CardHeading from 'calypso/components/card-heading';
 import Notice from 'calypso/components/notice';
 import TaxFields from 'calypso/my-sites/checkout/src/components/tax-fields';
-import useCountryList from 'calypso/my-sites/checkout/src/hooks/use-country-list';
+import { useCheckoutCountryList } from 'calypso/my-sites/checkout/src/hooks/use-checkout-country-list';
 import { usePaymentMethodTaxInfo } from './use-payment-method-tax-info';
 import type { TaxInfo, TaxGetInfo } from './types';
 import type { ManagedContactDetails } from '@automattic/wpcom-checkout';
@@ -57,7 +57,7 @@ const PaymentMethodEditDialog: FunctionComponent< {
 	value,
 } ) => {
 	const translate = useTranslate();
-	const countriesList = useCountryList();
+	const countriesList = useCheckoutCountryList();
 
 	return (
 		<Dialog

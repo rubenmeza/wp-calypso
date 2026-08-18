@@ -39,6 +39,7 @@
 		"checkout/google-pay": true,
 		"checkout/host-context": false,
 		"checkout/query-contact": false,
+		"checkout/query-countries": false,
 		"checkout/query-geo": false,
 		"checkout/query-payment-methods": false,
 		"checkout/stripe-upi": true,

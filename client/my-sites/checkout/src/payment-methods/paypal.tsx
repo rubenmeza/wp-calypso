@@ -12,7 +12,7 @@ import debugFactory from 'debug';
 import { useEffect, useState, Fragment } from 'react';
 import { PayPalLogo } from 'calypso/dashboard/components/paypal-logo';
 import TaxFields from 'calypso/my-sites/checkout/src/components/tax-fields';
-import useCountryList from 'calypso/my-sites/checkout/src/hooks/use-country-list';
+import { useCheckoutCountryList } from 'calypso/my-sites/checkout/src/hooks/use-checkout-country-list';
 import { PaymentMethodLogos } from '../components/payment-method-logos';
 import type { PaymentMethod, ProcessPayment } from '@automattic/composite-checkout';
 import type { ManagedContactDetails } from '@automattic/wpcom-checkout';
@@ -131,7 +131,7 @@ const PayPalFieldsWrapper = styled.div`
 function PayPalTaxFields( { state }: { state: PayPalPaymentMethodState } ) {
 	const { formStatus } = useFormStatus();
 	const isDisabled = formStatus !== FormStatus.READY;
-	const countriesList = useCountryList();
+	const countriesList = useCheckoutCountryList();
 	useSubscribeToEventEmitter( state );
 
 	const fields = {

@@ -10,7 +10,7 @@ import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { convertErrorToString } from '../lib/analytics';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import { useCheckoutCachedContactDetails } from './use-checkout-cached-contact-details';
-import useCountryList from './use-country-list';
+import { useCheckoutCountryList } from './use-checkout-country-list';
 import type { PossiblyCompleteDomainContactDetails } from '@automattic/wpcom-checkout';
 
 const debug = debugFactory( 'calypso:use-prefill-checkout-contact-form' );
@@ -20,7 +20,7 @@ function useCachedContactDetailsForCheckoutForm(
 	setShouldShowContactDetailsValidationErrors?: ( allowed: boolean ) => void,
 	suppressScrollOnAutoComplete?: boolean
 ): boolean {
-	const countriesList = useCountryList();
+	const countriesList = useCheckoutCountryList();
 	const reduxDispatch = useReduxDispatch();
 	const completeAllSteps = useCompleteAllSteps();
 	const suppressNextForwardScroll = useSuppressNextForwardScroll();

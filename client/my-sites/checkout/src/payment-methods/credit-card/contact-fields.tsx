@@ -1,7 +1,7 @@
 import { FormStatus, useFormStatus } from '@automattic/composite-checkout';
 import { useSelect } from '@wordpress/data';
 import TaxFields from 'calypso/my-sites/checkout/src/components/tax-fields';
-import useCountryList from 'calypso/my-sites/checkout/src/hooks/use-country-list';
+import { useCheckoutCountryList } from 'calypso/my-sites/checkout/src/hooks/use-checkout-country-list';
 import { CountrySpecificPaymentFields } from '../../components/country-specific-payment-fields';
 import { CardFieldState } from './types';
 import type { WpcomCreditCardSelectors } from './store';
@@ -24,7 +24,7 @@ export default function ContactFields( {
 } ) {
 	const { formStatus } = useFormStatus();
 	const isDisabled = formStatus !== FormStatus.READY;
-	const countriesList = useCountryList();
+	const countriesList = useCheckoutCountryList();
 	const fields: CardFieldState = useSelect(
 		( select ) => ( select( 'wpcom-credit-card' ) as WpcomCreditCardSelectors ).getFields(),
 		[]
