@@ -1,8 +1,9 @@
+import { domainContactInformationQuery } from '@automattic/api-queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import debugFactory from 'debug';
 import wpcom from 'calypso/lib/wp';
+import type { DomainContactInformation } from '@automattic/api-core';
 import type {
-	RawCachedDomainContactDetails,
 	DomainContactValidationRequest,
 	ManagedContactDetailsTldExtraFieldsShape,
 	PossiblyCompleteDomainContactDetails,
@@ -12,7 +13,7 @@ const debug = debugFactory( 'calypso:user-cached-contact-details' );
 
 async function fetchCachedContactDetails(): Promise< PossiblyCompleteDomainContactDetails > {
 	try {
-		const rawData: RawCachedDomainContactDetails = await wpcom.req.get(
+		const rawData: DomainContactInformation = await wpcom.req.get(
 			'/me/domain-contact-information'
 		);
 		debug( 'fetched cached contact details', rawData );
@@ -27,8 +28,8 @@ async function setCachedContactDetails( rawData: DomainContactValidationRequest 
 	wpcom.req.post( '/me/domain-contact-information', rawData );
 }
 
-function convertSnakeCaseContactDetailsToCamelCase(
-	rawData: RawCachedDomainContactDetails
+export function convertSnakeCaseContactDetailsToCamelCase(
+	rawData: DomainContactInformation
 ): PossiblyCompleteDomainContactDetails {
 	return {
 		firstName: rawData.first_name ?? null,
@@ -48,7 +49,7 @@ function convertSnakeCaseContactDetailsToCamelCase(
 }
 
 function convertSnakeCaseContactDetailsExtraToCamelCase(
-	extra: RawCachedDomainContactDetails[ 'extra' ] | undefined
+	extra: DomainContactInformation[ 'extra' ] | undefined
 ): ManagedContactDetailsTldExtraFieldsShape< string | null > | undefined {
 	if ( ! extra ) {
 		return undefined;
@@ -76,14 +77,24 @@ function convertSnakeCaseContactDetailsExtraToCamelCase(
 
 const cachedContactDetailsQueryKey = [ 'user-cached-contact-details' ];
 
-export function useCachedContactDetails( { isLoggedOut }: { isLoggedOut?: boolean } ): {
+export function useCachedContactDetails( {
+	isLoggedOut,
+	enabled = true,
+}: {
+	isLoggedOut?: boolean;
+	/**
+	 * False while another read is answering for these details, so that only one
+	 * of the two fetches. See `useCheckoutCachedContactDetails`.
+	 */
+	enabled?: boolean;
+} ): {
 	contactDetails: PossiblyCompleteDomainContactDetails | null;
 	isError: boolean;
 } {
 	const result = useQuery( {
 		queryKey: cachedContactDetailsQueryKey,
 		queryFn: fetchCachedContactDetails,
-		enabled: ! isLoggedOut,
+		enabled: enabled && ! isLoggedOut,
 		meta: {
 			persist: false,
 		},
@@ -103,8 +114,13 @@ export function useUpdateCachedContactDetails(): (
 	const mutation = useMutation< void, Error, DomainContactValidationRequest >( {
 		mutationFn: setCachedContactDetails,
 		onSuccess: () => {
+			// Both caches: either of them may be the one checkout is autofilling
+			// from, and a save is the only moment either is known to be stale.
 			queryClient.invalidateQueries( {
 				queryKey: cachedContactDetailsQueryKey,
+			} );
+			queryClient.invalidateQueries( {
+				queryKey: domainContactInformationQuery().queryKey,
 			} );
 		},
 	} );

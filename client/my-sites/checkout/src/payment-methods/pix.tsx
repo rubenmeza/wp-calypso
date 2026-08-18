@@ -10,7 +10,7 @@ import {
 } from 'calypso/components/domains/contact-details-form-fields/custom-form-fieldsets/utils';
 import { StateSelect } from 'calypso/my-sites/domains/components/form';
 import useCartKey from '../../use-cart-key';
-import { useCachedContactDetails } from '../hooks/use-cached-contact-details';
+import { useCheckoutCachedContactDetails } from '../hooks/use-checkout-cached-contact-details';
 import type { PaymentMethod, ProcessPayment } from '@automattic/composite-checkout';
 
 // We currently only show Pix for Brazil so we hard-code the country to avoid
@@ -116,7 +116,7 @@ function usePrefillState( state: PixPaymentMethodState ): void {
 	const cartKey = useCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const isLoggedOut = responseCart.cart_key === 'no-user';
-	const { contactDetails } = useCachedContactDetails( { isLoggedOut } );
+	const { contactDetails } = useCheckoutCachedContactDetails( { isLoggedOut } );
 
 	// Don't try to pre-fill if the form has been edited. (Also prevents
 	// infinite loops.)

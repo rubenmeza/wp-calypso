@@ -58,6 +58,7 @@ export * from './me-account-recovery';
 export * from './me-billing-history';
 export * from './me-blocked-sites';
 export * from './me-connected-applications';
+export * from './me-domain-contact-information';
 export * from './me-dpa';
 export * from './me-legacy-contacts';
 export * from './me-mailboxes';

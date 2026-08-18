@@ -9,7 +9,7 @@ import { useDispatch as useReduxDispatch } from 'calypso/state';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { convertErrorToString } from '../lib/analytics';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
-import { useCachedContactDetails } from './use-cached-contact-details';
+import { useCheckoutCachedContactDetails } from './use-checkout-cached-contact-details';
 import useCountryList from './use-country-list';
 import type { PossiblyCompleteDomainContactDetails } from '@automattic/wpcom-checkout';
 
@@ -155,7 +155,7 @@ export function usePrefillCheckoutContactForm( {
 	isLoggedOut?: boolean;
 	suppressScrollOnAutoComplete?: boolean;
 } ): boolean {
-	const { contactDetails, isError } = useCachedContactDetails( { isLoggedOut } );
+	const { contactDetails, isError } = useCheckoutCachedContactDetails( { isLoggedOut } );
 
 	const hasCompleted = useCachedContactDetailsForCheckoutForm(
 		contactDetails,
