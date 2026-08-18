@@ -3,6 +3,7 @@ export interface UserTaxFormData {
 	id: string;
 	address: string;
 	name: string;
+	isForBusiness?: boolean | null;
 }
 
 export interface UserTaxDetails {

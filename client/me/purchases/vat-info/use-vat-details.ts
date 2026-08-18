@@ -1,3 +1,4 @@
+import { userTaxDetailsQuery } from '@automattic/api-queries';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import wpcom from 'calypso/lib/wp';
@@ -56,44 +57,67 @@ function stripCountryCodeFromVatId( id: string, country: string | undefined | nu
 
 const emptyVatDetails = {};
 
-export default function useVatDetails(): VatDetailsManager {
+export const vatDetailsQueryKey = [ 'vat-details' ];
+
+/**
+ * The formatting the endpoint expects, applied by every path that writes VAT
+ * details. See `useCheckoutVatDetails` for the other one.
+ */
+export function formatVatDetails( data: VatDetails ): VatDetails {
+	const { country, id } = data;
+
+	if ( !! id && id?.length > 1 ) {
+		return { ...data, id: stripCountryCodeFromVatId( id, country ) };
+	}
+
+	return data;
+}
+
+export default function useVatDetails( {
+	enabled = true,
+}: {
+	/**
+	 * False while another read is answering for these details, so that only one
+	 * of the two fetches. See `useCheckoutVatDetails`.
+	 */
+	enabled?: boolean;
+} = {} ): VatDetailsManager {
 	const queryClient = useQueryClient();
 	const query = useQuery< VatDetails, FetchError >( {
-		queryKey: [ 'vat-details' ],
+		queryKey: vatDetailsQueryKey,
 		queryFn: fetchVatDetails,
+		enabled,
+		// Personal data: keep it out of the cache that is written to storage.
+		meta: { persist: false },
 	} );
 	const mutation = useMutation< VatDetails, UpdateError, VatDetails >( {
 		mutationFn: setVatDetails,
 		onSuccess: ( data ) => {
-			queryClient.setQueryData( [ 'vat-details' ], data );
+			queryClient.setQueryData( vatDetailsQueryKey, data );
+			// Checkout may be reading the shared query in this same session.
+			queryClient.setQueryData( userTaxDetailsQuery().queryKey, data );
 		},
 	} );
-	const formatVatDetails = useCallback( ( data: VatDetails ) => {
-		const { country, id } = data;
+	const { data, isLoading, error: fetchError } = query;
+	const { mutateAsync, isPending, isSuccess, error: updateError } = mutation;
 
-		if ( !! id && id?.length > 1 ) {
-			return { ...data, id: stripCountryCodeFromVatId( id, country ) };
-		}
-
-		return data;
-	}, [] );
 	const setDetails = useCallback(
 		( vatDetails: VatDetails ) => {
-			return mutation.mutateAsync( formatVatDetails( vatDetails ) );
+			return mutateAsync( formatVatDetails( vatDetails ) );
 		},
-		[ mutation, formatVatDetails ]
+		[ mutateAsync ]
 	);
 
 	return useMemo(
 		() => ( {
-			vatDetails: query.data ?? emptyVatDetails,
-			isLoading: query.isLoading,
-			isUpdating: mutation.isPending,
-			isUpdateSuccessful: mutation.isSuccess,
-			fetchError: query.error,
-			updateError: mutation.error,
+			vatDetails: data ?? emptyVatDetails,
+			isLoading,
+			isUpdating: isPending,
+			isUpdateSuccessful: isSuccess,
+			fetchError,
+			updateError,
 			setVatDetails: setDetails,
 		} ),
-		[ query, setDetails, mutation ]
+		[ data, isLoading, fetchError, isPending, isSuccess, updateError, setDetails ]
 	);
 }

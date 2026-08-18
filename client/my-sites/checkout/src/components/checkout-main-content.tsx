@@ -70,7 +70,6 @@ import { isWcMobileApp } from 'calypso/lib/mobile-app';
 import { PerformanceTrackerStop } from 'calypso/lib/performance-tracking';
 import { usePresalesChat } from 'calypso/lib/presales-chat';
 import { areVatDetailsSame } from 'calypso/me/purchases/vat-info/are-vat-details-same';
-import useVatDetails from 'calypso/me/purchases/vat-info/use-vat-details';
 import { CheckoutOrderBanner } from 'calypso/my-sites/checkout/src/components/checkout-order-banner';
 import { useCheckoutUiRedesignExperiment } from 'calypso/my-sites/checkout/src/hooks/use-checkout-ui-redesign-experiment';
 import { useMobileCheckoutStickySummaryExperiment } from 'calypso/my-sites/checkout/src/hooks/use-mobile-checkout-sticky-summary-experiment';
@@ -99,6 +98,7 @@ import {
 	useCheckoutRecordEvent,
 	useCheckoutUrlParams,
 } from '../hooks/use-checkout-host-bridge';
+import { useCheckoutVatDetails } from '../hooks/use-checkout-vat-details';
 import useCouponFieldState from '../hooks/use-coupon-field-state';
 import { validateContactDetails } from '../lib/contact-validation';
 import { updateCartContactDetailsForCheckout } from '../lib/update-cart-contact-details-for-checkout';
@@ -534,7 +534,7 @@ export default function CheckoutMainContent( {
 	const contactInfo = useSelect( ( select ) => select( CHECKOUT_STORE ).getContactInfo(), [] );
 
 	const vatDetailsInForm = useSelect( ( select ) => select( CHECKOUT_STORE ).getVatDetails(), [] );
-	const { setVatDetails, vatDetails: vatDetailsFromServer } = useVatDetails();
+	const { setVatDetails, vatDetails: vatDetailsFromServer } = useCheckoutVatDetails();
 
 	const checkoutActions = useDispatch( CHECKOUT_STORE );
 
