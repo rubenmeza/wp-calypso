@@ -34,6 +34,7 @@
 		"checkout/checkout-version": false,
 		"checkout/google-pay": true,
 		"checkout/host-context": true,
+		"checkout/query-payment-methods": true,
 		"checkout/stripe-upi": true,
 		"cookie-banner": false,
 		"current-site/domain-warning": false,

@@ -1,6 +1,6 @@
 import { isCreditCard, type StoredPaymentMethod } from '@automattic/wpcom-checkout';
 import { UseQueryResult, useQuery } from '@tanstack/react-query';
-import { useStoredPaymentMethods } from '../src/hooks/use-stored-payment-methods';
+import { useCheckoutStoredPaymentMethods } from '../src/hooks/use-checkout-stored-payment-methods';
 import {
 	getTaxValidationResult,
 	isContactValidationResponseValid,
@@ -39,7 +39,7 @@ const useIsContactInfoValid = (
 };
 
 export const useIsEligibleForOneClickCheckout = (): IsEligibleForOneClickCheckoutReturnValue => {
-	const { isLoading: isStoredPaymentsLoading, paymentMethods } = useStoredPaymentMethods( {
+	const { isLoading: isStoredPaymentsLoading, paymentMethods } = useCheckoutStoredPaymentMethods( {
 		type: 'card',
 	} );
 	const { isInitialLoading: isContactInfoValidationLoading, data: contactValidationResult } =
