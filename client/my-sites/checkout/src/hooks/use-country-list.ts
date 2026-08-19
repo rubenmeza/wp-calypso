@@ -21,10 +21,22 @@ async function fetchCountryListForCheckout( locale?: string ): Promise< CountryL
 	);
 }
 
-export default function useCountryList( locale?: string ): CountryListItem[] {
+export default function useCountryList(
+	locale?: string,
+	{
+		enabled = true,
+	}: {
+		/**
+		 * False while another read is answering for this list, so that only one
+		 * of the two fetches. See `useCheckoutCountryList`.
+		 */
+		enabled?: boolean;
+	} = {}
+): CountryListItem[] {
 	const result = useQuery( {
 		queryKey: getCountryListQueryKey( locale ),
 		queryFn: () => fetchCountryListForCheckout( locale ),
+		enabled,
 		meta: {
 			persist: false,
 		},

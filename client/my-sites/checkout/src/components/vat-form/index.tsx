@@ -5,7 +5,7 @@ import { useTranslate } from 'i18n-calypso';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import FormSettingExplanation from 'calypso/components/forms/form-setting-explanation';
 import useVatDetails from 'calypso/me/purchases/vat-info/use-vat-details';
-import useCountryList, { isVatSupported } from '../../hooks/use-country-list';
+import { isVatSupported, useCheckoutCountryList } from '../../hooks/use-checkout-country-list';
 import { CHECKOUT_STORE } from '../../lib/wpcom-store';
 import { useGetVatFormString } from './use-get-string';
 
@@ -25,7 +25,7 @@ export function VatForm( {
 	 */
 	countryCode: string | undefined;
 } ) {
-	const countries = useCountryList();
+	const countries = useCheckoutCountryList();
 	const translate = useTranslate();
 	const getVatFormString = useGetVatFormString( countryCode );
 	const vatDetailsInForm = useSelect( ( select ) => select( CHECKOUT_STORE ).getVatDetails(), [] );

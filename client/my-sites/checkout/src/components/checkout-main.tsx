@@ -30,6 +30,7 @@ import isAtomicSite from 'calypso/state/selectors/is-site-automated-transfer';
 import { isJetpackSite, isCommerceGardenSite } from 'calypso/state/sites/selectors';
 import useActOnceOnStrings from '../hooks/use-act-once-on-strings';
 import useAddProductsFromUrl from '../hooks/use-add-products-from-url';
+import { useCheckoutCountryList } from '../hooks/use-checkout-country-list';
 import useCheckoutFlowTrackKey from '../hooks/use-checkout-flow-track-key';
 import {
 	useCheckoutNotices,
@@ -39,7 +40,6 @@ import {
 import useCheckoutSiteSlug from '../hooks/use-checkout-site-slug';
 import { useCheckoutStoredPaymentMethods } from '../hooks/use-checkout-stored-payment-methods';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
-import useCountryList from '../hooks/use-country-list';
 import useCreatePaymentMethods from '../hooks/use-create-payment-methods';
 import { existingCardPrefix } from '../hooks/use-create-payment-methods/use-create-existing-cards';
 import { existingPayPalPPCPPrefix } from '../hooks/use-create-payment-methods/use-create-existing-paypal-ppcp';
@@ -230,7 +230,7 @@ export default function CheckoutMain( {
 		isUserComingFromLoginForm,
 	} );
 
-	const countriesList = useCountryList();
+	const countriesList = useCheckoutCountryList();
 
 	const {
 		productsForCart,
