@@ -9,6 +9,7 @@ import {
 	SUCCESS,
 	UNKNOWN,
 } from 'calypso/state/order-transactions/constants';
+import type { OrderProcessingStatus, OrderTransaction as RawOrder } from '@automattic/api-core';
 import type { OrderTransaction } from 'calypso/state/selectors/get-order-transaction';
 
 export async function fetchPurchaseOrder(
@@ -22,13 +23,9 @@ export async function fetchPurchaseOrder(
 	} );
 }
 
-export type PurchaseOrderStatus =
-	| 'error'
-	| 'processing'
-	| 'async-pending'
-	| 'payment-confirmed'
-	| 'payment-failure'
-	| 'success';
+/** The same payload the shared order query reads; this hook keeps the older shape. */
+export type PurchaseOrderStatus = OrderProcessingStatus;
+export type { RawOrder };
 type OrderTransactionStatus =
 	| typeof ERROR
 	| typeof PROCESSING
@@ -36,13 +33,6 @@ type OrderTransactionStatus =
 	| typeof FAILURE
 	| typeof SUCCESS
 	| typeof UNKNOWN;
-
-export interface RawOrder {
-	order_id: number;
-	user_id: number;
-	receipt_id: number | undefined;
-	processing_status: PurchaseOrderStatus;
-}
 
 function transformPurchaseOrderStatusToOrderTransactionStatus(
 	rawStatus: PurchaseOrderStatus
