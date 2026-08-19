@@ -33,6 +33,7 @@ describe( 'the switch the whole foundation ramps behind', () => {
 				'checkout/query-countries',
 				'checkout/query-tax',
 				'checkout/scoped-store',
+				'checkout/content-split',
 			].includes( flag )
 		);
 

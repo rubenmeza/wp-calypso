@@ -426,6 +426,7 @@ export default function CheckoutMainContent( {
 	loadingHeader,
 	onStepChanged,
 	showSitePreview = false,
+	isEmbedded = false,
 }: {
 	addItemToCart: ( item: MinimalRequestCartProduct ) => void;
 	changeSelection: OnChangeItemVariant;
@@ -448,6 +449,8 @@ export default function CheckoutMainContent( {
 	customizedPreviousPath?: string;
 	loadingHeader?: ReactNode;
 	showSitePreview?: boolean;
+	/** Rendered inside a frame the host owns, rather than owning the page. */
+	isEmbedded?: boolean;
 } ) {
 	const translate = useTranslate();
 	const cartKey = useCartKey();
@@ -669,8 +672,8 @@ export default function CheckoutMainContent( {
 		const headingText = translate( 'Almost there—we’re currently finalizing your order.' );
 
 		return (
-			<WPCheckoutCompletedWrapper>
-				<WPCheckoutCompletedMainContent>
+			<WPCheckoutCompletedWrapper isEmbedded={ isEmbedded }>
+				<WPCheckoutCompletedMainContent isEmbedded={ isEmbedded }>
 					<PerformanceTrackerStop />
 					<Loading className="checkout__pending-content" title={ headingText } />
 				</WPCheckoutCompletedMainContent>
@@ -689,7 +692,7 @@ export default function CheckoutMainContent( {
 	) {
 		debug( 'rendering empty cart page' );
 		return (
-			<WPCheckoutWrapper>
+			<WPCheckoutWrapper isEmbedded={ isEmbedded }>
 				<WPCheckoutSidebarContent></WPCheckoutSidebarContent>
 				<WPCheckoutMainContent isMobileCheckoutStickySummary={ isMobileCheckoutStickySummary }>
 					<PerformanceTrackerStop />
@@ -1110,6 +1113,7 @@ export default function CheckoutMainContent( {
 					className="checkout-wrapper"
 					isLargeViewport={ isLargeViewport }
 					isCheckoutUiRedesignV1={ isCheckoutUiRedesignV1 }
+					isEmbedded={ isEmbedded }
 				>
 					{ isCheckoutUiRedesignV1 && ! isLargeViewport && (
 						<WPCheckoutTitle className="checkout__main-title checkout__redesign-header">
@@ -2522,6 +2526,7 @@ const SubmitButtonHeaderWrapper = styled.div`
 const WPCheckoutWrapper = styled.div< {
 	isLargeViewport?: boolean;
 	isCheckoutUiRedesignV1?: boolean;
+	isEmbedded?: boolean;
 } >`
 	background: ${ colorStudio.colors[ 'White' ] };
 	display: grid;
@@ -2534,7 +2539,7 @@ const WPCheckoutWrapper = styled.div< {
 	align-content: start;
 	justify-content: center;
 	justify-items: center;
-	min-height: 100vh;
+	min-height: ${ ( props ) => ( props.isEmbedded ? 'auto' : '100vh' ) };
 
 	@media ( ${ ( props ) => props.theme.breakpoints.desktopUp } ) {
 		grid-template-columns: 1fr minmax( 500px, 688px ) 475px 1fr;
@@ -2948,17 +2953,17 @@ const WPCheckoutWrapper = styled.div< {
 		` }
 `;
 
-const WPCheckoutCompletedWrapper = styled.div`
+const WPCheckoutCompletedWrapper = styled.div< { isEmbedded?: boolean } >`
 	background: ${ colorStudio.colors[ 'White' ] };
 	display: flex;
 	justify-content: center;
 	justify-items: center;
-	min-height: 100vh;
+	min-height: ${ ( props ) => ( props.isEmbedded ? 'auto' : '100vh' ) };
 	& > * {
 		box-sizing: border-box;
 		width: 100%;
 		@media ( ${ ( props ) => props.theme.breakpoints.desktopUp } ) {
-			min-height: 100vh;
+			min-height: ${ ( props ) => ( props.isEmbedded ? 'auto' : '100vh' ) };
 		}
 	}
 	& *:focus {
@@ -3139,9 +3144,9 @@ const WPCheckoutMainContent = styled.div< {
 	` }
 `;
 
-const WPCheckoutCompletedMainContent = styled.div`
+const WPCheckoutCompletedMainContent = styled.div< { isEmbedded?: boolean } >`
 	margin-top: 60px;
-	min-height: 100vh;
+	min-height: ${ ( props ) => ( props.isEmbedded ? 'auto' : '100vh' ) };
 	@media ( ${ ( props ) => props.theme.breakpoints.tabletUp } ) {
 		padding: 0 24px;
 		max-width: 648px;
