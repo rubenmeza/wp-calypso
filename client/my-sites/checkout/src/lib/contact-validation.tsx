@@ -1,3 +1,5 @@
+import { validateTaxContactInformation } from '@automattic/api-core';
+import { isEnabled } from '@automattic/calypso-config';
 import {
 	getDomain,
 	isDomainTransfer,
@@ -319,9 +321,25 @@ function convertValidationResponse( rawResponse: unknown ): DomainContactValidat
 	};
 }
 
+/**
+ * The `checkout/query-tax` switch: with the flag on the tax contact details are
+ * validated through the shared request, with it off through checkout's own
+ * older post. Same endpoint, same payload, same parsing — the older post goes
+ * away once the flag is retired.
+ *
+ * This calls the shared request rather than `validateTaxContactInformationMutation`
+ * because validation runs here as a plain async function, outside React, where a
+ * mutation wrapper has nothing to hold.
+ */
 async function wpcomValidateTaxContactInformation(
 	contactInformation: ContactValidationRequestContactInformation
 ): Promise< DomainContactValidationResponse > {
+	if ( isEnabled( 'checkout/query-tax' ) ) {
+		return convertValidationResponse(
+			await validateTaxContactInformation( { contact_information: contactInformation } )
+		);
+	}
+
 	return wp.req
 		.post( { path: '/me/tax-contact-information/validate' }, undefined, {
 			contact_information: contactInformation,
