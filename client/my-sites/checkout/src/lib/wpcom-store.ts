@@ -176,7 +176,7 @@ function vatDetailsReducer( state: VatDetails, action: WpcomStoreAction ): VatDe
 	}
 }
 
-const store = createReduxStore( CHECKOUT_STORE_KEY, {
+const storeConfig = {
 	reducer( state: WpcomStoreState | undefined, action: WpcomStoreAction ): WpcomStoreState {
 		if ( action.type === 'RESET' || state === undefined ) {
 			state = getInitialWpcomStoreState( emptyManagedContactDetails );
@@ -189,8 +189,20 @@ const store = createReduxStore( CHECKOUT_STORE_KEY, {
 	},
 	actions,
 	selectors,
-} );
+};
+
+/**
+ * A checkout's own local state — what the shopper has typed, and which fields
+ * they have touched. One of these belongs to each open checkout; see
+ * `CheckoutStoreProvider`, which registers one per instance.
+ */
+export function createCheckoutStore() {
+	return createReduxStore( CHECKOUT_STORE_KEY, storeConfig );
+}
+
+const store = createCheckoutStore();
 
 register( store );
 
+/** The store used everywhere a checkout has not registered one of its own. */
 export const CHECKOUT_STORE = store;
