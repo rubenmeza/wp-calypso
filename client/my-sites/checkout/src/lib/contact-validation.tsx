@@ -1,5 +1,4 @@
 import { validateTaxContactInformation } from '@automattic/api-core';
-import { isEnabled } from '@automattic/calypso-config';
 import {
 	getDomain,
 	isDomainTransfer,
@@ -22,6 +21,7 @@ import {
 	formatDomainContactValidationResponse,
 	getSignupValidationErrorResponse,
 } from '../types/wpcom-store-state';
+import { isSharedFoundationEnabled } from './shared-foundation';
 import type { RequestCartProduct, ResponseCart } from '@automattic/shopping-cart';
 import type {
 	ManagedContactDetails,
@@ -322,7 +322,7 @@ function convertValidationResponse( rawResponse: unknown ): DomainContactValidat
 }
 
 /**
- * The `checkout/query-tax` switch: with the flag on the tax contact details are
+ * On the shared foundation the tax contact details are
  * validated through the shared request, with it off through checkout's own
  * older post. Same endpoint, same payload, same parsing — the older post goes
  * away once the flag is retired.
@@ -334,7 +334,7 @@ function convertValidationResponse( rawResponse: unknown ): DomainContactValidat
 async function wpcomValidateTaxContactInformation(
 	contactInformation: ContactValidationRequestContactInformation
 ): Promise< DomainContactValidationResponse > {
-	if ( isEnabled( 'checkout/query-tax' ) ) {
+	if ( isSharedFoundationEnabled() ) {
 		return convertValidationResponse(
 			await validateTaxContactInformation( { contact_information: contactInformation } )
 		);

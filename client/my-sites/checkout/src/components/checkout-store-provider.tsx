@@ -1,6 +1,6 @@
-import { isEnabled } from '@automattic/calypso-config';
 import { RegistryProvider, createRegistry, useRegistry } from '@wordpress/data';
 import { useState } from 'react';
+import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import { createCheckoutStore } from '../lib/wpcom-store';
 import type { ReactNode } from 'react';
 
@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
  * What a shopper has typed lives in a `@wordpress/data` store that every
  * checkout shared, so opening checkout twice — two hosts, or the same one
  * reopened — meant the second inheriting whatever the first left behind.
- * Behind the `checkout/scoped-store` flag this registers a store of its own in
+ * On the shared foundation this registers a store of its own in
  * a child registry, so each open checkout starts empty and stays its own.
  *
  * The child registry keeps its parent, so every other store the checkout reads
@@ -36,7 +36,7 @@ export function CheckoutStoreProvider( { children }: { children: ReactNode } ) {
 	// of the page. Fine for a route that is navigated to; worth revisiting when a
 	// modal can be opened and closed repeatedly.
 	const [ scopedRegistry ] = useState( () => {
-		if ( ! isEnabled( 'checkout/scoped-store' ) ) {
+		if ( ! isSharedFoundationEnabled() ) {
 			return null;
 		}
 		const registry = createRegistry( {}, parentRegistry );

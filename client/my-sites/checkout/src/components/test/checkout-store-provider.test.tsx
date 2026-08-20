@@ -80,7 +80,7 @@ beforeEach( () => {
 
 describe( 'two checkouts open at once, with the flag on', () => {
 	beforeEach( () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/scoped-store' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 	} );
 
 	it( 'do not see each other’s contact details', () => {
@@ -139,7 +139,7 @@ describe( 'two checkouts open at once, with the flag off', () => {
 
 describe( 'what a checkout keeps to itself, with the flag on', () => {
 	beforeEach( () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/scoped-store' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 	} );
 
 	it( 'includes the VAT details and which fields were touched', () => {

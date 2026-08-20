@@ -50,7 +50,7 @@ beforeEach( () => {
 
 describe( 'validating the tax contact details', () => {
 	it( 'goes through the shared mutation with the flag on', async () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 
 		await expect( getTaxValidationResult( contactInfo ) ).resolves.toEqual( { success: true } );
 
@@ -75,7 +75,9 @@ describe( 'validating the tax contact details', () => {
 		[ 'the shared mutation', true ],
 		[ 'the older path', false ],
 	] )( 'sends the same contact details through %s', async ( _name, isFlagOn ) => {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 
 		await getTaxValidationResult( contactInfo );
 
@@ -90,7 +92,9 @@ describe( 'validating the tax contact details', () => {
 		[ 'the shared mutation', true ],
 		[ 'the older path', false ],
 	] )( 'turns a rejection from %s into per-field messages', async ( _name, isFlagOn ) => {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 		const failure = {
 			success: false,
 			messages: { 'contact_information.postal_code': [ 'Not a valid postcode' ] },

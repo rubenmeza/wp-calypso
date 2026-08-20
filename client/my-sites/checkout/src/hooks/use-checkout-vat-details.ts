@@ -1,12 +1,12 @@
 import { updateUserTaxDetails } from '@automattic/api-core';
 import { userTaxDetailsQuery } from '@automattic/api-queries';
-import { isEnabled } from '@automattic/calypso-config';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import useVatDetails, {
 	formatVatDetails,
 	vatDetailsQueryKey,
 } from 'calypso/me/purchases/vat-info/use-vat-details';
+import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import type { UserTaxFormData } from '@automattic/api-core';
 import type { VatDetails } from '@automattic/wpcom-checkout';
 import type { VatDetailsManager } from 'calypso/me/purchases/vat-info/use-vat-details';
@@ -47,7 +47,7 @@ function withoutNulls( vatDetails: VatDetails ) {
 
 /**
  * The shopper's saved VAT details, read and written through whichever source
- * the `checkout/query-tax` flag selects: the shared query and mutation, or
+ * the `checkout/shared-foundation` flag selects: the shared query and mutation, or
  * checkout's own older path. Both read and write `/me/vat-info` with the same
  * formatting, so the details are the same either way. The old path goes away
  * once the flag is retired.
@@ -57,7 +57,7 @@ function withoutNulls( vatDetails: VatDetails ) {
  * checkout goes through here; the `/me/purchases` screens keep the old path.
  */
 export function useCheckoutVatDetails(): VatDetailsManager {
-	const useSharedQuery = isEnabled( 'checkout/query-tax' );
+	const useSharedQuery = isSharedFoundationEnabled();
 	const queryClient = useQueryClient();
 
 	const legacy = useVatDetails( { enabled: ! useSharedQuery } );

@@ -71,7 +71,7 @@ beforeEach( () => {
 
 describe( 'the cached contact details with the shared query', () => {
 	beforeEach( () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/query-contact' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 	} );
 
 	it( 'autofills from the shared query', async () => {
@@ -137,7 +137,9 @@ describe( 'the cached contact details with the flag off', () => {
 
 describe( 'the two sources', () => {
 	async function detailsWithFlag( isFlagOn: boolean ) {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-contact' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 		const { result } = renderContactDetails();
 		await waitFor( () => expect( result.current.details.contactDetails ).not.toBeNull() );
 		return result.current.details.contactDetails;
@@ -150,7 +152,7 @@ describe( 'the two sources', () => {
 
 describe( 'saving contact details', () => {
 	it( 'refreshes both caches, whichever one checkout is reading', async () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/query-contact' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 		const { result } = renderContactDetails();
 
 		await waitFor( () => expect( mockSharedFetch ).toHaveBeenCalledTimes( 1 ) );

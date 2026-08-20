@@ -70,7 +70,7 @@ beforeEach( () => {
 
 describe( 'country detection with the shared geo query', () => {
 	beforeEach( () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/query-geo' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 	} );
 
 	it( 'gives the store the country the geo query reports', async () => {

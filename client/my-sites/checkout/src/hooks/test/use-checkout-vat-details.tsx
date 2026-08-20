@@ -65,7 +65,7 @@ beforeEach( () => {
 
 describe( 'the VAT details with the shared query', () => {
 	beforeEach( () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 	} );
 
 	it( 'reads the saved details from the shared query', async () => {
@@ -147,7 +147,9 @@ describe( 'the VAT id a shopper types', () => {
 		[ 'the shared mutation', true ],
 		[ 'the older path', false ],
 	] )( 'reaches %s without the country code the shopper prefixed', async ( _name, isFlagOn ) => {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 		const { result } = renderVatDetails();
 		await waitFor( () => expect( result.current.vatDetails ).toEqual( savedVatDetails ) );
 
@@ -167,7 +169,9 @@ describe( 'the VAT id a shopper types', () => {
 		[ 'the shared mutation', true ],
 		[ 'the older path', false ],
 	] )( 'reaches %s without the Swiss prefix either', async ( _name, isFlagOn ) => {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 		const { result } = renderVatDetails();
 		await waitFor( () => expect( result.current.vatDetails ).toEqual( savedVatDetails ) );
 
@@ -189,7 +193,9 @@ describe( 'the business flag on the VAT details', () => {
 		[ 'the shared mutation', true ],
 		[ 'the older path', false ],
 	] )( 'still reaches the endpoint through %s', async ( _name, isFlagOn ) => {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 		const { result } = renderVatDetails();
 		await waitFor( () => expect( result.current.vatDetails ).toEqual( savedVatDetails ) );
 
@@ -206,7 +212,9 @@ describe( 'the saved VAT details and the on-disk cache', () => {
 		[ 'the shared query', true ],
 		[ 'the older read', false ],
 	] )( 'are not written to storage by %s', async ( _name, isFlagOn ) => {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-tax' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 		const { result, queryClient } = renderVatDetails();
 
 		await waitFor( () => expect( result.current.vatDetails ).toEqual( savedVatDetails ) );

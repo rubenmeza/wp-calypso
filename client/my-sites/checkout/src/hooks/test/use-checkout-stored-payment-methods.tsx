@@ -77,9 +77,7 @@ function renderCards() {
 }
 
 function setSharedQueryFlag( enabled: boolean ) {
-	mockIsEnabled.mockImplementation(
-		( flag ) => flag === 'checkout/query-payment-methods' && enabled
-	);
+	mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' && enabled );
 }
 
 describe( 'useCheckoutStoredPaymentMethods', () => {
