@@ -3,7 +3,7 @@ import {
 	updateManagedContactDetailsShape,
 	mapManagedContactDetailsShape,
 	flattenManagedContactDetailsShape,
-} from '../types/wpcom-store-state';
+} from '../contact-details';
 import type { ManagedContactDetailsShape } from '@automattic/wpcom-checkout';
 
 // Reads a value at a dotted path (e.g. `extra.ca.lang`).

@@ -6,6 +6,11 @@
 		"rootDir": "src"
 	},
 	"include": [ "src" ],
-	"references": [ { "path": "../api-core" }, { "path": "../api-queries" } ],
+	"references": [
+		{ "path": "../api-core" },
+		{ "path": "../api-queries" },
+		{ "path": "../shopping-cart" },
+		{ "path": "../wpcom-checkout" }
+	],
 	"exclude": [ "**/__tests__/*", "**/__mocks__/*" ]
 }
