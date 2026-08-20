@@ -1,6 +1,6 @@
 import { domainContactInformationQuery } from '@automattic/api-queries';
-import { isEnabled } from '@automattic/calypso-config';
 import { useQuery } from '@tanstack/react-query';
+import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import {
 	convertSnakeCaseContactDetailsToCamelCase,
 	useCachedContactDetails,
@@ -9,7 +9,7 @@ import type { PossiblyCompleteDomainContactDetails } from '@automattic/wpcom-che
 
 /**
  * The contact details checkout autofills from, out of whichever source the
- * `checkout/query-contact` flag selects: the shared query, or checkout's own
+ * `checkout/shared-foundation` flag selects: the shared query, or checkout's own
  * older read. Both are the same `/me/domain-contact-information` payload put
  * through the same conversion, so the form is filled with the same values
  * either way. The old read goes away once the flag is retired.
@@ -21,7 +21,7 @@ export function useCheckoutCachedContactDetails( { isLoggedOut }: { isLoggedOut?
 	contactDetails: PossiblyCompleteDomainContactDetails | null;
 	isError: boolean;
 } {
-	const useSharedQuery = isEnabled( 'checkout/query-contact' );
+	const useSharedQuery = isSharedFoundationEnabled();
 
 	const legacy = useCachedContactDetails( { isLoggedOut, enabled: ! useSharedQuery } );
 

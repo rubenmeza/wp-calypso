@@ -1,9 +1,9 @@
 import { requestPaymentMethodDeletion } from '@automattic/api-core';
 import { userPaymentMethodsQuery } from '@automattic/api-queries';
-import { isEnabled } from '@automattic/calypso-config';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslate } from 'i18n-calypso';
 import { useCallback } from 'react';
+import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import {
 	readStoredPaymentMethods,
 	storedPaymentMethodsQueryKey,
@@ -16,7 +16,7 @@ import type {
 
 /**
  * The saved-card list checkout reads, from whichever source the
- * `checkout/query-payment-methods` flag selects: the shared query the Dashboard
+ * `checkout/shared-foundation` flag selects: the shared query the Dashboard
  * uses, or checkout's own older read. Both hit `/me/payment-methods` with the
  * same arguments, so the cards are the same either way — only the cache they
  * land in differs. The old read goes away once the flag is retired.
@@ -35,7 +35,7 @@ export function useCheckoutStoredPaymentMethods( {
 	expired?: boolean;
 	isForBusiness?: boolean | null;
 } = {} ): StoredPaymentMethodsState {
-	const useSharedQuery = isEnabled( 'checkout/query-payment-methods' );
+	const useSharedQuery = isSharedFoundationEnabled();
 	const translate = useTranslate();
 	const queryClient = useQueryClient();
 

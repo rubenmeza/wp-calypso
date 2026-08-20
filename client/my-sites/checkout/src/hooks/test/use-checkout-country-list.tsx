@@ -59,7 +59,7 @@ beforeEach( () => {
 
 describe( 'the country list with the shared query', () => {
 	beforeEach( () => {
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/query-countries' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 	} );
 
 	it( 'comes from the shared query, and the older read stays quiet', async () => {
@@ -134,7 +134,9 @@ describe( 'the country list and the on-disk cache', () => {
 		[ 'the shared query', true ],
 		[ 'the older read', false ],
 	] )( 'is not written to storage by %s', async ( _name, isFlagOn ) => {
-		mockIsEnabled.mockImplementation( ( flag ) => isFlagOn && flag === 'checkout/query-countries' );
+		mockIsEnabled.mockImplementation(
+			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
+		);
 		const queryClient = new QueryClient( { defaultOptions: { queries: { retry: false } } } );
 		const wrapper = ( { children }: { children: ReactNode } ) => (
 			<QueryClientProvider client={ queryClient }>{ children }</QueryClientProvider>

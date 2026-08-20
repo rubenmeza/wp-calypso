@@ -43,8 +43,9 @@ The sidebar/summary view is NOT a step — visibility is manually managed via
 
 - **Redux** — global state (site, user, notices)
 - **`@wordpress/data` store** (`wpcom-store.ts`) — checkout-specific: contact details, VAT,
-  domain validation results, form touched fields. Behind `checkout/scoped-store` the
-  `/checkout` route registers one of these per open checkout in a child registry
+  domain validation results, form touched fields. On the shared foundation
+  (`checkout/shared-foundation`) the `/checkout` route registers one of these per open checkout
+  in a child registry
   (`checkout-store-provider.tsx`), so two checkouts never share typed state; everywhere else
   still uses the module-level singleton. Anything that writes into this store must render
   inside that provider — the recaptcha badge does. Surfaces that seed it from outside the

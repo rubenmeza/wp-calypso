@@ -48,7 +48,7 @@ function renderWithHost< T >( hook: () => T ) {
 describe( 'the host bridge with the flag on', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/host-context' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 		window.history.replaceState( {}, '', '/checkout/example.com?from=window' );
 	} );
 
@@ -139,7 +139,7 @@ describe( 'the host bridge with the flag off', () => {
 describe( 'the host bridge where no host is mounted', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/host-context' );
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 		window.history.replaceState( {}, '', '/checkout/example.com?from=window' );
 	} );
 

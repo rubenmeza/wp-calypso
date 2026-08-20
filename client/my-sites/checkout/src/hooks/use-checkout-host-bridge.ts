@@ -1,6 +1,6 @@
-import { isEnabled } from '@automattic/calypso-config';
 import { useOptionalCheckoutHost } from '@automattic/checkout';
 import { useMemo } from 'react';
+import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import {
 	useCalypsoCheckoutNotices,
 	useCalypsoCheckoutRecordEvent,
@@ -8,11 +8,11 @@ import {
 import type { CheckoutHostContext, CheckoutNotices } from '@automattic/checkout';
 
 /**
- * These hooks are the `checkout/host-context` switch: with the flag on, the
- * legacy checkout reads its host capabilities from the injected context; with
- * it off, it keeps the direct reads it has always done. Both paths run through
- * the same call sites, so the only difference between flag states is where the
- * capability comes from.
+ * These hooks are the host-context part of the shared foundation: with the flag
+ * on, the legacy checkout reads its host capabilities from the injected
+ * context; with it off, it keeps the direct reads it has always done. Both
+ * paths run through the same call sites, so the only difference between flag
+ * states is where the capability comes from.
  *
  * A host is also required, not just the flag — surfaces that render
  * `CheckoutMain` without mounting a provider (Automattic for Agencies) stay on
@@ -21,7 +21,7 @@ import type { CheckoutHostContext, CheckoutNotices } from '@automattic/checkout'
  */
 function useEnabledCheckoutHost(): CheckoutHostContext | null {
 	const host = useOptionalCheckoutHost();
-	return isEnabled( 'checkout/host-context' ) ? host : null;
+	return isSharedFoundationEnabled() ? host : null;
 }
 
 export function useCheckoutSiteId( siteId: number | undefined ): number | undefined {

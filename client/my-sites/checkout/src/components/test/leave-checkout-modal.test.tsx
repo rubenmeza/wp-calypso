@@ -455,7 +455,7 @@ describe( 'useCheckoutLeaveModal with a checkout host mounted', () => {
 		( useValidCheckoutBackUrl as jest.Mock ).mockReturnValue(
 			'https://mynewsite.wordpress.com/setup/onboarding/plans'
 		);
-		mockIsEnabled.mockImplementation( ( flag: string ) => flag === 'checkout/host-context' );
+		mockIsEnabled.mockImplementation( ( flag: string ) => flag === 'checkout/shared-foundation' );
 	} );
 
 	it( 'closes through the host, telling it where checkout wanted to go', async () => {
