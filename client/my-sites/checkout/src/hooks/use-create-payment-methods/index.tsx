@@ -16,6 +16,7 @@ import {
 	type StoredPaymentMethod,
 	type ContactDetailsType,
 } from '@automattic/wpcom-checkout';
+import { useRegistry } from '@wordpress/data';
 import { useMemo } from 'react';
 import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import { CheckoutSubmitButtonContent } from '../../components/checkout-submit-button-content';
@@ -89,13 +90,18 @@ export function useCreateCreditCard( {
 	hasExistingCardMethods?: boolean;
 } ): PaymentMethod | null {
 	const shouldLoadStripeMethod = ! isStripeLoading && ! stripeLoadingError;
+	// The card fields are this checkout's state too, so they belong in whichever
+	// registry it is using. Outside a scoped checkout this is the global one, so
+	// nothing moves.
+	const registry = useRegistry();
 	const stripePaymentMethodStore = useMemo(
 		() =>
 			createCreditCardPaymentMethodStore( {
 				initialUseForAllSubscriptions,
 				allowUseForAllSubscriptions,
+				registry,
 			} ),
-		[ initialUseForAllSubscriptions, allowUseForAllSubscriptions ]
+		[ initialUseForAllSubscriptions, allowUseForAllSubscriptions, registry ]
 	);
 
 	const stripeMethod = useMemo(

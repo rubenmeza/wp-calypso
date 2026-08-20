@@ -40,6 +40,7 @@
 		"checkout/query-geo": true,
 		"checkout/query-payment-methods": true,
 		"checkout/query-tax": true,
+		"checkout/scoped-store": true,
 		"checkout/stripe-upi": true,
 		"ciab/allow-domain-features": true,
 		"ciab/custom-branding": true,

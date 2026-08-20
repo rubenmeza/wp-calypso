@@ -12,6 +12,7 @@ import { getCurrentUserLocale } from 'calypso/state/current-user/selectors';
 import { getSelectedSiteId } from 'calypso/state/ui/selectors';
 import CalypsoShoppingCartProvider from './calypso-shopping-cart-provider';
 import CheckoutMain from './src/components/checkout-main';
+import { CheckoutStoreProvider } from './src/components/checkout-store-provider';
 import useCalypsoCheckoutHost from './src/hooks/use-calypso-checkout-host';
 import useCheckoutSiteSlug from './src/hooks/use-checkout-site-slug';
 import { logStashLoadErrorEvent } from './src/lib/analytics';
@@ -114,7 +115,7 @@ export default function CheckoutMainWrapper( {
 	} );
 
 	return (
-		<>
+		<CheckoutStoreProvider>
 			<CheckoutErrorBoundary
 				errorMessage={ translate( 'Sorry, there was an error loading this page.' ) }
 				onError={ logCheckoutError }
@@ -148,7 +149,10 @@ export default function CheckoutMainWrapper( {
 					</StripeHookProvider>
 				</CalypsoShoppingCartProvider>
 			</CheckoutErrorBoundary>
+			{ /* Inside the provider: it reports the recaptcha client id into the
+			     checkout's store, and a scoped checkout has to be the one that
+			     hears it. */ }
 			{ isLoggedOutCart && <Recaptcha badgePosition="bottomright" /> }
-		</>
+		</CheckoutStoreProvider>
 	);
 }
