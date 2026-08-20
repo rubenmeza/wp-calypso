@@ -35,3 +35,23 @@ context supplied by the embedding app, and server data is read through `@automat
 The boundary is enforced by `.eslintrc.js` — `no-restricted-imports`, `no-restricted-modules`, and
 a `no-restricted-syntax` selector for `import()` — so a forbidden import fails `yarn lint:js` in
 CI. `src/__tests__/import-boundary.ts` asserts the rules still bite.
+
+## Seams
+
+### `host/` — what an app gives the checkout
+
+`CheckoutHostContext` and its provider: which site is being bought for, how to
+navigate, how to close, how to show a notice, and what to do when the purchase
+completes. One host fills this in; the checkout reads it.
+
+### `content/` — what the checkout tells its host
+
+`CheckoutStatusProvider` and `useCheckoutStatus` carry `isBusy` and `canClose`
+outwards, so a host can decide whether its frame may be dismissed. Only the
+checkout can see that a payment is going through; only the host can act on it.
+A host that renders no provider is told nothing, which is what the full-page
+route does.
+
+### `order/` — following a purchase to its end
+
+`useOrderTransaction` polls an order until the server says what happened to it.

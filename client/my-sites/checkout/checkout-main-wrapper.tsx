@@ -2,6 +2,7 @@ import config from '@automattic/calypso-config';
 import { StripeHookProvider } from '@automattic/calypso-stripe';
 import { CheckoutHostProvider } from '@automattic/checkout';
 import { CheckoutErrorBoundary } from '@automattic/composite-checkout';
+import styled from '@emotion/styled';
 import { useTranslate } from 'i18n-calypso';
 import { useEffect } from 'react';
 import { logToLogstash } from 'calypso/lib/logstash';
@@ -11,16 +12,29 @@ import { useSelector } from 'calypso/state';
 import { getCurrentUserLocale } from 'calypso/state/current-user/selectors';
 import { getSelectedSiteId } from 'calypso/state/ui/selectors';
 import CalypsoShoppingCartProvider from './calypso-shopping-cart-provider';
+import { CheckoutContent } from './src/components/checkout-content';
 import CheckoutMain from './src/components/checkout-main';
 import { CheckoutStoreProvider } from './src/components/checkout-store-provider';
 import useCalypsoCheckoutHost from './src/hooks/use-calypso-checkout-host';
 import useCheckoutSiteSlug from './src/hooks/use-checkout-site-slug';
 import { logStashLoadErrorEvent } from './src/lib/analytics';
+import { isSharedFoundationEnabled } from './src/lib/shared-foundation';
 import type { SitelessCheckoutType } from '@automattic/wpcom-checkout';
 
 const logCheckoutError = ( error: Error ) => {
 	logStashLoadErrorEvent( 'checkout_system_decider', error );
 };
+
+/** The page the checkout fills when the full-page route is the host. */
+const CheckoutPageShell = styled.div`
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+
+	> * {
+		flex: 1;
+	}
+`;
 
 export default function CheckoutMainWrapper( {
 	productAliasFromUrl,
@@ -114,6 +128,37 @@ export default function CheckoutMainWrapper( {
 		siteSlug: checkoutSiteSlug,
 	} );
 
+	const isContentSplit = isSharedFoundationEnabled();
+	const checkoutProps = {
+		siteSlug: siteSlug,
+		siteId: selectedSiteId,
+		productAliasFromUrl: productAliasFromUrl,
+		productSourceFromUrl: productSourceFromUrl,
+		purchaseId: purchaseId,
+		couponCode: couponCode,
+		redirectTo: redirectTo,
+		feature: selectedFeature,
+		plan: plan,
+		isComingFromUpsell: isComingFromUpsell,
+		sitelessCheckoutType: sitelessCheckoutType,
+		isLoggedOutCart: isLoggedOutCart,
+		isNoSiteCart: isNoSiteCart,
+		isGiftPurchase: isGiftPurchase,
+		jetpackSiteSlug: jetpackSiteSlug,
+		jetpackPurchaseToken: jetpackPurchaseToken,
+		isUserComingFromLoginForm: isUserComingFromLoginForm,
+		connectAfterCheckout: connectAfterCheckout,
+		fromSiteSlug: fromSiteSlug,
+		adminUrl: adminUrl,
+	};
+	const checkout = isContentSplit ? (
+		<CheckoutPageShell>
+			<CheckoutContent { ...checkoutProps } recordsPageView />
+		</CheckoutPageShell>
+	) : (
+		<CheckoutMain { ...checkoutProps } />
+	);
+
 	return (
 		<CheckoutStoreProvider>
 			<CheckoutErrorBoundary
@@ -122,30 +167,7 @@ export default function CheckoutMainWrapper( {
 			>
 				<CalypsoShoppingCartProvider shouldShowPersistentErrors>
 					<StripeHookProvider fetchStripeConfiguration={ getStripeConfiguration } locale={ locale }>
-						<CheckoutHostProvider value={ checkoutHost }>
-							<CheckoutMain
-								siteSlug={ siteSlug }
-								siteId={ selectedSiteId }
-								productAliasFromUrl={ productAliasFromUrl }
-								productSourceFromUrl={ productSourceFromUrl }
-								purchaseId={ purchaseId }
-								couponCode={ couponCode }
-								redirectTo={ redirectTo }
-								feature={ selectedFeature }
-								plan={ plan }
-								isComingFromUpsell={ isComingFromUpsell }
-								sitelessCheckoutType={ sitelessCheckoutType }
-								isLoggedOutCart={ isLoggedOutCart }
-								isNoSiteCart={ isNoSiteCart }
-								isGiftPurchase={ isGiftPurchase }
-								jetpackSiteSlug={ jetpackSiteSlug }
-								jetpackPurchaseToken={ jetpackPurchaseToken }
-								isUserComingFromLoginForm={ isUserComingFromLoginForm }
-								connectAfterCheckout={ connectAfterCheckout }
-								fromSiteSlug={ fromSiteSlug }
-								adminUrl={ adminUrl }
-							/>
-						</CheckoutHostProvider>
+						<CheckoutHostProvider value={ checkoutHost }>{ checkout }</CheckoutHostProvider>
 					</StripeHookProvider>
 				</CalypsoShoppingCartProvider>
 			</CheckoutErrorBoundary>

@@ -69,6 +69,7 @@ import webPayProcessor from '../lib/web-pay-processor';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import { CheckoutLoadingPlaceholder } from './checkout-loading-placeholder';
 import CheckoutMainContent from './checkout-main-content';
+import { CheckoutStatusReporter } from './checkout-status-reporter';
 import { OnChangeItemVariant } from './item-variation-picker';
 import JetpackProRedirectModal from './jetpack-pro-redirect-modal';
 import PrePurchaseNotices from './prepurchase-notices';
@@ -117,6 +118,10 @@ export interface CheckoutMainProps {
 	fromSiteSlug?: string;
 	adminUrl?: string;
 	hostingIntent?: string | undefined;
+	/** Rendered inside a frame the host owns, rather than owning the page. */
+	isEmbedded?: boolean;
+	/** False for a host that records its own view of whatever it opened. */
+	recordsPageView?: boolean;
 }
 
 export default function CheckoutMain( {
@@ -143,6 +148,8 @@ export default function CheckoutMain( {
 	fromSiteSlug,
 	adminUrl,
 	hostingIntent,
+	isEmbedded = false,
+	recordsPageView = true,
 }: CheckoutMainProps ) {
 	const translate = useTranslate();
 	const siteId = useCheckoutSiteId( siteIdFromProps );
@@ -842,15 +849,17 @@ export default function CheckoutMain( {
 
 	return (
 		<Step.StepContainerV2Provider value={ stepContainerV2Context }>
-			<PageViewTracker
-				path={ analyticsPath }
-				title="Checkout"
-				properties={ analyticsProps }
-				options={ {
-					useJetpackGoogleAnalytics: sitelessCheckoutType === 'jetpack' || isJetpackNotAtomic,
-					useAkismetGoogleAnalytics: sitelessCheckoutType === 'akismet',
-				} }
-			/>
+			{ recordsPageView && (
+				<PageViewTracker
+					path={ analyticsPath }
+					title="Checkout"
+					properties={ analyticsProps }
+					options={ {
+						useJetpackGoogleAnalytics: sitelessCheckoutType === 'jetpack' || isJetpackNotAtomic,
+						useAkismetGoogleAnalytics: sitelessCheckoutType === 'akismet',
+					} }
+				/>
+			) }
 			<VGSCollectProvider>
 				<CheckoutProvider
 					onPaymentComplete={ handlePaymentSubmitted }
@@ -866,7 +875,9 @@ export default function CheckoutMain( {
 					selectFirstAvailablePaymentMethod
 					initiallySelectedPaymentMethodId={ initiallySelectedPaymentMethodId }
 				>
+					<CheckoutStatusReporter />
 					<CheckoutMainContent
+						isEmbedded={ isEmbedded }
 						loadingHeader={
 							<CheckoutLoadingPlaceholder checkoutLoadingConditions={ checkoutLoadingConditions } />
 						}
