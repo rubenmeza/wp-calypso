@@ -1,7 +1,5 @@
 import { DOMAIN_PROMOTIONAL_PRICING_POLICY } from '@automattic/urls';
-import { localize } from 'i18n-calypso';
-import { Component } from 'react';
-import { gaRecordEvent } from 'calypso/lib/analytics/ga';
+import { useTranslate } from 'i18n-calypso';
 import {
 	getDomainMappings,
 	getDomainRegistrations,
@@ -10,35 +8,43 @@ import {
 	hasTransferProduct,
 } from 'calypso/lib/cart-values/cart-items';
 import CheckoutTermsItem from 'calypso/my-sites/checkout/src/components/checkout-terms-item';
+import { useCheckoutRecordGaEvent } from '../hooks/use-checkout-analytics-bridge';
 import type { ResponseCart } from '@automattic/shopping-cart';
-import type { LocalizeProps } from 'i18n-calypso';
 
 export interface DomainPromotionalPricingRestrictionsProps {
 	cart: ResponseCart;
 }
 
-class DomainPromotionalPricingRestrictions extends Component<
-	DomainPromotionalPricingRestrictionsProps & LocalizeProps
-> {
-	recordPromotionalPricingPolicyClick = () => {
-		gaRecordEvent( 'Upgrades', 'Clicked Registration Agreement Link' );
-	};
+function hasAnyDomainWithPromotionalPrice( cart: ResponseCart ): boolean {
+	const domainProducts = [
+		...getDomainRegistrations( cart ),
+		...getDomainMappings( cart ),
+		...getDomainTransfers( cart ),
+	];
+	return domainProducts.some(
+		( product ) => product.item_subtotal_integer !== product.item_original_subtotal_integer
+	);
+}
 
-	hasAnyDomainWithPromotionalPrice( cart: ResponseCart ): boolean {
-		const domainProducts = [
-			...getDomainRegistrations( cart ),
-			...getDomainMappings( cart ),
-			...getDomainTransfers( cart ),
-		];
-		return domainProducts.some(
-			( product ) => product.item_subtotal_integer !== product.item_original_subtotal_integer
-		);
+export default function DomainPromotionalPricingRestrictions( {
+	cart,
+}: DomainPromotionalPricingRestrictionsProps ) {
+	const translate = useTranslate();
+	const recordGaEvent = useCheckoutRecordGaEvent();
+
+	const cartHasDomain = hasDomainRegistration( cart ) || hasTransferProduct( cart );
+	if ( ! cartHasDomain || ! hasAnyDomainWithPromotionalPrice( cart ) ) {
+		return null;
 	}
 
-	renderPromotionalPricingRestrictionsLink = () => {
-		return (
+	const recordPromotionalPricingPolicyClick = () => {
+		recordGaEvent( 'Upgrades', 'Clicked Registration Agreement Link' );
+	};
+
+	return (
+		<CheckoutTermsItem isPrewrappedChildren>
 			<p>
-				{ this.props.translate(
+				{ translate(
 					'{{promotionalPricingPolicyLink}}Restrictions apply{{/promotionalPricingPolicyLink}}.',
 					{
 						components: {
@@ -47,29 +53,13 @@ class DomainPromotionalPricingRestrictions extends Component<
 									href={ DOMAIN_PROMOTIONAL_PRICING_POLICY }
 									target="_blank"
 									rel="noopener noreferrer"
-									onClick={ this.recordPromotionalPricingPolicyClick }
+									onClick={ recordPromotionalPricingPolicyClick }
 								/>
 							),
 						},
 					}
 				) }
 			</p>
-		);
-	};
-
-	render() {
-		const { cart } = this.props;
-		const cartHasDomain = hasDomainRegistration( cart ) || hasTransferProduct( cart );
-		if ( ! cartHasDomain || ! this.hasAnyDomainWithPromotionalPrice( cart ) ) {
-			return null;
-		}
-
-		return (
-			<CheckoutTermsItem isPrewrappedChildren>
-				{ this.renderPromotionalPricingRestrictionsLink() }
-			</CheckoutTermsItem>
-		);
-	}
+		</CheckoutTermsItem>
+	);
 }
-
-export default localize( DomainPromotionalPricingRestrictions );

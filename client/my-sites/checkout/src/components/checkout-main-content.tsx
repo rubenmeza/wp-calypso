@@ -84,7 +84,6 @@ import SitePreview from 'calypso/my-sites/customer-home/cards/features/site-prev
 import useOneDollarOfferTrack from 'calypso/my-sites/plans/hooks/use-onedollar-offer-track';
 import { siteHasPaidPlan } from 'calypso/signup/steps/site-picker/site-picker-submit';
 import { useDispatch as useReduxDispatch, useSelector } from 'calypso/state';
-import { removeNotice } from 'calypso/state/notices/actions';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
 import { getIsOnboardingAffiliateFlow } from 'calypso/state/signup/flow/selectors';
 import { getWpComDomainBySiteId } from 'calypso/state/sites/domains/selectors';
@@ -932,7 +931,7 @@ export default function CheckoutMainContent( {
 											await setVatDetails( vatDetailsInForm );
 										}
 									} catch ( error ) {
-										reduxDispatch( removeNotice( 'vat_info_notice' ) );
+										notices.remove( 'vat_info_notice' );
 										if ( shouldDisplayValidationErrors ) {
 											const vatError = error as { error?: string; message: string };
 											// `invalid_vat` means the VAT ID could not be validated right now
@@ -948,7 +947,7 @@ export default function CheckoutMainContent( {
 										}
 										return false;
 									}
-									reduxDispatch( removeNotice( 'vat_info_notice' ) );
+									notices.remove( 'vat_info_notice' );
 
 									// When the contact details change, update the cart's tax location to match.
 									try {
