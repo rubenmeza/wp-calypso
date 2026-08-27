@@ -11,7 +11,7 @@ import { useTranslate } from 'i18n-calypso';
 import { FunctionComponent } from 'react';
 import { useCheckoutUiRedesignExperiment } from 'calypso/my-sites/checkout/src/hooks/use-checkout-ui-redesign-experiment';
 import { useMobileCheckoutStickySummaryExperiment } from 'calypso/my-sites/checkout/src/hooks/use-mobile-checkout-sticky-summary-experiment';
-import useCartKey from '../../../use-cart-key';
+import { useCheckoutCartKey } from '../../hooks/use-checkout-host-bridge';
 import type { WPCOMProductVariant } from './types';
 
 const Discount = styled.span< { isMobileCheckoutStickySummary?: boolean } >`
@@ -126,7 +126,7 @@ export const ItemVariantRadioPrice: FunctionComponent< {
 	compareTo?: WPCOMProductVariant;
 } > = ( { variant, compareTo } ) => {
 	const translate = useTranslate();
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { couponStatus } = useShoppingCart( cartKey );
 	const isApplyingCoupon = couponStatus === 'pending';
 	const [ , isCheckoutUiRedesignV1 ] = useCheckoutUiRedesignExperiment();

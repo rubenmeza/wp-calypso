@@ -16,10 +16,10 @@ import styled from '@emotion/styled';
 import { Icon, chevronUp } from '@wordpress/icons';
 import { useTranslate } from 'i18n-calypso';
 import { Fragment, useId, useState } from 'react';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import useEquivalentMonthlyTotals, {
 	getSubtotalBeforeDiscounts,
 } from 'calypso/my-sites/checkout/utils/use-equivalent-monthly-totals';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { useSubmitButtonSlot } from '../lib/submit-button-slot';
 import { getLineItemPriceDisplay } from './cost-overrides-list';
 import { PriceLoadingIndicator } from './wp-checkout-order-summary';
@@ -334,7 +334,7 @@ function StickyOrderSummary( {
 
 export function MobileCheckoutStickySummary() {
 	const translate = useTranslate();
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const totalLineItem = getTotalLineItemFromCart( responseCart );
 	// Call this once with the cart's own array: it memoizes on `products` by

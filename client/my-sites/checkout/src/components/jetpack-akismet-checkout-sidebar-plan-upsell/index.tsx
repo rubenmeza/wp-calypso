@@ -10,10 +10,10 @@ import { useCallback, type FC, useMemo } from 'react';
 import PromoCard from 'calypso/components/promo-section/promo-card';
 import PromoCardCTA from 'calypso/components/promo-section/promo-card/cta';
 import { preventWidows } from 'calypso/lib/formatting';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import { useDispatch } from 'calypso/state';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { useGetProductVariants } from '../../hooks/product-variants';
+import { useCheckoutCartKey } from '../../hooks/use-checkout-host-bridge';
 import { getItemVariantDiscount } from '../item-variation-picker/util';
 
 import './style.scss';
@@ -33,7 +33,7 @@ const isJetpackAkismetProduct = ( product: ResponseCartProduct ) =>
 	isJetpackProduct( product ) || isJetpackPlan( product ) || isAkismetProduct( product );
 
 const useCurrentProductWithVariants = () => {
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const reduxDispatch = useDispatch();
 	const { responseCart, replaceProductInCart } = useShoppingCart( cartKey );
 	const product = responseCart.products.find( isJetpackAkismetProduct );
@@ -253,11 +253,9 @@ const JetpackAkismetCheckoutSidebarPlanUpsell: FC = () => {
 	);
 
 	const isLoading = FormStatus.READY !== formStatus;
-	const cardTitle = sprintf(
-		// translators: "percentSavings" is the savings percentage for the upgrade as a number, like '20' for '20%'.
-		__( 'Save %(percentSavings)d%% by paying for two years.' ),
-		{ percentSavings }
-	);
+	// translators: %(percentSavings)d%% is the savings percentage for the upgrade as a number, like '20' for '20%'.
+	const savingsTitle = __( 'Save %(percentSavings)d%% by paying for two years.' );
+	const cardTitle = sprintf( savingsTitle, { percentSavings } );
 
 	return (
 		<PromoCard title={ cardTitle } className="checkout-sidebar-plan-upsell jetpack">
