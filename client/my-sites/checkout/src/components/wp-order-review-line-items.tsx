@@ -29,14 +29,13 @@ import {
 	useRenewalPricingExperiment,
 } from 'calypso/my-sites/plans-features-main/hooks/use-renewal-price-experiment';
 import { getSignupCompleteFlowName } from 'calypso/signup/storageUtils';
-import { useSelector } from 'calypso/state';
-import {
-	getIsOnboardingAffiliateFlow,
-	getIsOnboardingUnifiedFlow,
-} from 'calypso/state/signup/flow/selectors';
 import { getAffiliateCouponLabel } from '../../utils';
 import { useCheckoutRecordEvent } from '../hooks/use-checkout-host-bridge';
-import { useIsWcMobileApp } from '../hooks/use-checkout-surface';
+import {
+	useIsWcMobileApp,
+	useCheckoutIsOnboardingAffiliateFlow,
+	useCheckoutIsOnboardingUnifiedFlow,
+} from '../hooks/use-checkout-surface';
 import { AkismetProQuantityDropDown } from './akismet-pro-quantity-dropdown';
 import { ItemVariationPicker } from './item-variation-picker';
 import type { OnChangeAkProQuantity } from './akismet-pro-quantity-dropdown';
@@ -106,8 +105,8 @@ export function WPOrderReviewLineItems( {
 	const recordEvent = useCheckoutRecordEvent();
 	const creditsLineItem = getCreditsLineItemFromCart( responseCart );
 	const couponLineItem = getCouponLineItemFromCart( responseCart );
-	const isOnboardingAffiliateFlow = useSelector( getIsOnboardingAffiliateFlow );
-	const isOnboardingUnifiedFlow = useSelector( getIsOnboardingUnifiedFlow );
+	const isOnboardingAffiliateFlow = useCheckoutIsOnboardingAffiliateFlow();
+	const isOnboardingUnifiedFlow = useCheckoutIsOnboardingUnifiedFlow();
 	const [ , renewalPricingVariation ] = useRenewalPricingExperiment();
 	const isBFref =
 		typeof window !== 'undefined' &&

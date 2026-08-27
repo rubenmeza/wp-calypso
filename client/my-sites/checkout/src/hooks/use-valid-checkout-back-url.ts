@@ -2,9 +2,8 @@ import config from '@automattic/calypso-config';
 import { isAllowedRedirectUrl } from '@automattic/calypso-url';
 import { getLanguageSlugs } from '@automattic/i18n-utils';
 import { useMemo } from 'react';
-import { useSelector } from 'calypso/state';
-import getInitialQueryArguments from 'calypso/state/selectors/get-initial-query-arguments';
 import { useCheckoutSiteFacts } from './use-checkout-site-facts';
+import { useCheckoutInitialQueryArguments } from './use-checkout-surface';
 
 const getAllowedHosts = ( siteSlug?: string ): string[] => {
 	const hostname = config< string >( 'hostname' );
@@ -29,7 +28,7 @@ const useValidCheckoutBackUrl = (
 	siteId?: number,
 	queryArgName = 'checkoutBackUrl'
 ): string | undefined => {
-	const queryArgs = useSelector( getInitialQueryArguments ) ?? {};
+	const queryArgs = useCheckoutInitialQueryArguments() ?? {};
 	const backUrl = queryArgs[ queryArgName ] as string | undefined;
 	const site = useCheckoutSiteFacts( siteId, siteSlug );
 	const isSelfHostedJetpack = site.isJetpack && ! site.isAtomic && ! site.isCommerceGarden;
