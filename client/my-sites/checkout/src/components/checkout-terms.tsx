@@ -1,14 +1,14 @@
 import { isDomainTransfer } from '@automattic/calypso-products';
 import { FoldableCard } from '@automattic/components';
-import { styled } from '@automattic/wpcom-checkout';
-import { useSelect } from '@wordpress/data';
-import { useTranslate } from 'i18n-calypso';
-import { Children, Fragment, ReactNode, isValidElement } from 'react';
 import {
+	styled,
 	has100YearPlan,
 	hasRenewableSubscription,
 	has100YearDomain,
-} from 'calypso/lib/cart-values/cart-items';
+} from '@automattic/wpcom-checkout';
+import { useSelect } from '@wordpress/data';
+import { useTranslate } from 'i18n-calypso';
+import { Children, Fragment, ReactNode, isValidElement } from 'react';
 import DomainPromotionalPricingRestrictions from 'calypso/my-sites/checkout/src/components/domain-promotional-pricing-restrictions';
 import { useCheckoutSelectedSiteId, useCheckoutSiteFacts } from '../hooks/use-checkout-site-facts';
 import { useIsAkismetCheckout, useIsJetpackCheckout } from '../hooks/use-checkout-surface';

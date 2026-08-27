@@ -32,6 +32,13 @@ import {
 	getContactDetailsType,
 	ContactDetailsType,
 	RestorableProductsProvider,
+	hasGoogleApps,
+	hasDomainRegistration,
+	hasTransferProduct,
+	hasDIFMProduct,
+	has100YearPlan as cartHas100YearPlan,
+	ObjectWithProducts,
+	hasPlan,
 } from '@automattic/wpcom-checkout';
 import { css, keyframes } from '@emotion/react';
 import { Icon } from '@wordpress/components';
@@ -54,15 +61,6 @@ import Loading from 'calypso/components/loading';
 import { OnboardingProgress } from 'calypso/landing/stepper/declarative-flow/internals/steps-repository/components/onboarding-progress';
 import { useShowOnboardingProgress } from 'calypso/landing/stepper/declarative-flow/internals/steps-repository/components/onboarding-progress/use-show-onboarding-progress';
 import { useInitialIsInStepContainerV2FlowContext } from 'calypso/layout/utils';
-import {
-	hasGoogleApps,
-	hasDomainRegistration,
-	hasTransferProduct,
-	hasDIFMProduct,
-	has100YearPlan as cartHas100YearPlan,
-	ObjectWithProducts,
-	hasPlan,
-} from 'calypso/lib/cart-values/cart-items';
 import { getGoogleMailServiceFamily } from 'calypso/lib/gsuite';
 import { PerformanceTrackerStop } from 'calypso/lib/performance-tracking';
 import { usePresalesChat } from 'calypso/lib/presales-chat';
