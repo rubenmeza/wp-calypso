@@ -4,15 +4,14 @@ import { styled } from '@automattic/wpcom-checkout';
 import { useSelect } from '@wordpress/data';
 import { useTranslate } from 'i18n-calypso';
 import { Children, Fragment, ReactNode, isValidElement } from 'react';
-import isAkismetCheckout from 'calypso/lib/akismet/is-akismet-checkout';
 import {
 	has100YearPlan,
 	hasRenewableSubscription,
 	has100YearDomain,
 } from 'calypso/lib/cart-values/cart-items';
-import isJetpackCheckout from 'calypso/lib/jetpack/is-jetpack-checkout';
 import DomainPromotionalPricingRestrictions from 'calypso/my-sites/checkout/src/components/domain-promotional-pricing-restrictions';
 import { useCheckoutSelectedSiteId, useCheckoutSiteFacts } from '../hooks/use-checkout-site-facts';
+import { useIsAkismetCheckout, useIsJetpackCheckout } from '../hooks/use-checkout-surface';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import AdditionalTermsOfServiceInCart from './additional-terms-of-service-in-cart';
 import BundledDomainNotice, { showBundledDomainNotice } from './bundled-domain-notice';
@@ -68,9 +67,11 @@ export default function CheckoutTerms( {
 	const translate = useTranslate();
 	const site = useCheckoutSiteFacts( useCheckoutSelectedSiteId() );
 	const isJetpackNotAtomic = site.isJetpack && ! site.isAtomic;
+	const isJetpackCheckout = useIsJetpackCheckout();
+	const isAkismetCheckout = useIsAkismetCheckout();
 	const contactInfo = useSelect( ( select ) => select( CHECKOUT_STORE ).getContactInfo(), [] );
 	const isNotJetpackOrAkismetCheckout =
-		! isJetpackCheckout() && ! isJetpackNotAtomic && ! isAkismetCheckout();
+		! isJetpackCheckout && ! isJetpackNotAtomic && ! isAkismetCheckout;
 
 	// Domain transfer is a one-time purchase, but it creates a renewable
 	// subscription behind the scenes so we need to show the full TOS including

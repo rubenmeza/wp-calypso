@@ -21,7 +21,6 @@ import styled from '@emotion/styled';
 import { getQueryArg } from '@wordpress/url';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { has100YearPlan, getDomainRegistrations } from 'calypso/lib/cart-values/cart-items';
-import { isWcMobileApp } from 'calypso/lib/mobile-app';
 import { useGetProductVariants } from 'calypso/my-sites/checkout/src/hooks/product-variants';
 import { useMobileCheckoutStickySummaryExperiment } from 'calypso/my-sites/checkout/src/hooks/use-mobile-checkout-sticky-summary-experiment';
 import {
@@ -36,6 +35,7 @@ import {
 	getIsOnboardingUnifiedFlow,
 } from 'calypso/state/signup/flow/selectors';
 import { getAffiliateCouponLabel } from '../../utils';
+import { useIsWcMobileApp } from '../hooks/use-checkout-surface';
 import { AkismetProQuantityDropDown } from './akismet-pro-quantity-dropdown';
 import { ItemVariationPicker } from './item-variation-picker';
 import type { OnChangeAkProQuantity } from './akismet-pro-quantity-dropdown';
@@ -135,7 +135,7 @@ export function WPOrderReviewLineItems( {
 
 	// Match the single-item path: the WooCommerce mobile app webview hides the
 	// remove action, so a bundle must not surface one either.
-	const isWooMobile = isWcMobileApp();
+	const isWooMobile = useIsWcMobileApp();
 
 	const isAkismetProMultipleLicensesCart = useMemo( () => {
 		if ( ! config.isEnabled( 'akismet/checkout-quantity-dropdown' ) ) {
@@ -363,7 +363,7 @@ function LineItemWrapper( {
 } ) {
 	const [ restorableProducts, setRestorableProducts ] = useRestorableProducts();
 	const isRenewal = isWpComProductRenewal( product );
-	const isWooMobile = isWcMobileApp();
+	const isWooMobile = useIsWcMobileApp();
 	const { isMobileCheckoutStickySummary } = useMobileCheckoutStickySummaryExperiment();
 	let isDeletable = canItemBeRemovedFromCart( product, responseCart ) && ! isWooMobile;
 	const has100YearPlanProduct = has100YearPlan( responseCart );
