@@ -8,8 +8,7 @@ import { useShoppingCart } from '@automattic/shopping-cart';
 import { styled, joinClasses, hasP2PlusPlan } from '@automattic/wpcom-checkout';
 import { useTranslate } from 'i18n-calypso';
 import { useEffect, useCallback } from 'react';
-import { useSelector, useDispatch } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
+import { useSelector } from 'calypso/state';
 import { NON_PRIMARY_DOMAINS_TO_FREE_USERS } from 'calypso/state/current-user/constants';
 import {
 	currentUserHasFlag,
@@ -21,7 +20,7 @@ import {
 	getIsOnboardingUnifiedFlow,
 } from 'calypso/state/signup/flow/selectors';
 import getSelectedSite from 'calypso/state/ui/selectors/get-selected-site';
-import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
+import { useCheckoutCartKey, useCheckoutRecordEvent } from '../hooks/use-checkout-host-bridge';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import { useMobileCheckoutStickySummaryExperiment } from '../hooks/use-mobile-checkout-sticky-summary-experiment';
 import Coupon from './coupon';
@@ -118,30 +117,26 @@ export default function WPCheckoutOrderReview( {
 	const translate = useTranslate();
 	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
-	const reduxDispatch = useDispatch();
+	const recordEvent = useCheckoutRecordEvent();
 
 	const onRemoveProductCancel = useCallback( () => {
-		reduxDispatch( recordTracksEvent( 'calypso_checkout_composite_cancel_delete_product' ) );
-	}, [ reduxDispatch ] );
+		recordEvent( 'calypso_checkout_composite_cancel_delete_product' );
+	}, [ recordEvent ] );
 	const onRemoveProduct = useCallback(
 		( label: string ) => {
-			reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_composite_delete_product', {
-					product_name: label,
-				} )
-			);
+			recordEvent( 'calypso_checkout_composite_delete_product', {
+				product_name: label,
+			} );
 		},
-		[ reduxDispatch ]
+		[ recordEvent ]
 	);
 	const onRemoveProductClick = useCallback(
 		( label: string ) => {
-			reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_composite_delete_product_press', {
-					product_name: label,
-				} )
-			);
+			recordEvent( 'calypso_checkout_composite_delete_product_press', {
+				product_name: label,
+			} );
 		},
-		[ reduxDispatch ]
+		[ recordEvent ]
 	);
 
 	const selectedSiteData = useSelector( getSelectedSite );

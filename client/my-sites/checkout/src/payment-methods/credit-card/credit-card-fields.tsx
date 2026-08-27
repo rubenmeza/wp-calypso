@@ -9,8 +9,7 @@ import Spinner from 'calypso/my-sites/checkout/src/components/spinner';
 import { useCheckoutLogError } from 'calypso/my-sites/checkout/src/hooks/use-checkout-service-bridge';
 import { useMobileCheckoutStickySummaryExperiment } from 'calypso/my-sites/checkout/src/hooks/use-mobile-checkout-sticky-summary-experiment';
 import { logStashEvent } from 'calypso/my-sites/checkout/src/lib/error-logging';
-import { useDispatch as useReduxDispatch } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
+import { useCheckoutRecordEvent } from '../../hooks/use-checkout-host-bridge';
 import AssignToAllPaymentMethods from './assign-to-all-payment-methods';
 import ContactFields from './contact-fields';
 import CreditCardCvvField from './credit-card-cvv-field';
@@ -49,6 +48,7 @@ export default function CreditCardFields( {
 } ) {
 	const { __ } = useI18n();
 	const theme = useTheme();
+	const recordEvent = useCheckoutRecordEvent();
 	const [ isStripeFullyLoaded, setIsStripeFullyLoaded ] = useState( false );
 	const [ vgsFormError, setVgsFormError ] = useState< string | null >( null );
 	const stripeLoadTimeoutRef = useRef< NodeJS.Timeout | null >( null );
@@ -83,7 +83,6 @@ export default function CreditCardFields( {
 		setUseForAllSubscriptions,
 		setForBusinessUse,
 	} = useDispatch( 'wpcom-credit-card' );
-	const reduxDispatch = useReduxDispatch();
 	const logError = useCheckoutLogError();
 
 	// We need the countryCode for the country specific payment fields which have
@@ -109,13 +108,11 @@ export default function CreditCardFields( {
 		}
 
 		if ( input.error && input.error.message ) {
-			reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_composite_stripe_field_invalid_error', {
-					error_type: 'Stripe field error',
-					error_field: input.elementType,
-					error_message: input.error.message,
-				} )
-			);
+			recordEvent( 'calypso_checkout_composite_stripe_field_invalid_error', {
+				error_type: 'Stripe field error',
+				error_field: input.elementType,
+				error_message: input.error.message,
+			} );
 			setCardDataError( input.elementType, input.error.message );
 			return;
 		}
