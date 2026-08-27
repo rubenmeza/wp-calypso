@@ -455,6 +455,24 @@ describe( 'useCheckoutLeaveModal with a checkout host mounted', () => {
 		mockIsEnabled.mockImplementation( ( flag: string ) => flag === 'checkout/shared-foundation' );
 	} );
 
+	it( 'records the close event, which the undispatched action creator never did', async () => {
+		const { getCart, setCart } = createFakeCartBackend( { [ NEW_SITE_CART_KEY ]: [] } );
+		const client = createShoppingCartManagerClient( { getCart, setCart } );
+
+		const { result } = renderHook( () => useCheckoutLeaveModal( { siteUrl: NEW_SITE_SLUG } ), {
+			wrapper: buildHostWrapper( client ),
+		} );
+
+		await act( async () => {
+			result.current.closeAndLeave();
+		} );
+
+		expect( host.recordEvent ).toHaveBeenCalledWith(
+			'calypso_masterbar_checkout_close_modal_submitted',
+			{ user_has_cleared_cart: false }
+		);
+	} );
+
 	it( 'closes through the host, telling it where checkout wanted to go', async () => {
 		const { getCart, setCart } = createFakeCartBackend( { [ NEW_SITE_CART_KEY ]: [] } );
 		const client = createShoppingCartManagerClient( { getCart, setCart } );
