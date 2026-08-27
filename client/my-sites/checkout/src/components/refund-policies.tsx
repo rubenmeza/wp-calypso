@@ -13,9 +13,13 @@ import {
 import { localizeUrl } from '@automattic/i18n-utils';
 import { formatCurrency } from '@automattic/number-formatters';
 import { DOMAIN_CANCEL, REFUNDS } from '@automattic/urls';
-import { isWpComProductRenewal as isRenewal, isValueTruthy } from '@automattic/wpcom-checkout';
+import {
+	isWpComProductRenewal as isRenewal,
+	isValueTruthy,
+	has100YearPlan,
+	has100YearDomain,
+} from '@automattic/wpcom-checkout';
 import { useTranslate, type TranslateResult } from 'i18n-calypso';
-import { has100YearPlan, has100YearDomain } from 'calypso/lib/cart-values/cart-items';
 import { useCheckoutRecordGaEvent } from '../hooks/use-checkout-analytics-bridge';
 import CheckoutTermsItem from './checkout-terms-item';
 import type { ResponseCart } from '@automattic/shopping-cart';

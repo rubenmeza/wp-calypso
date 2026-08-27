@@ -10,6 +10,9 @@
 	"references": [
 		{ "path": "../calypso-products" },
 		{ "path": "../shopping-cart" },
-		{ "path": "../components" }
+		{ "path": "../components" },
+		{ "path": "../data-stores" },
+		{ "path": "../domain-search" },
+		{ "path": "../onboarding" }
 	]
 }

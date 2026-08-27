@@ -1,10 +1,10 @@
+import { hasRenewalItem } from '@automattic/wpcom-checkout';
 import debugFactory from 'debug';
 import { useRef } from 'react';
 import {
 	useInitialIsInStepContainerV2FlowContext,
 	useInitialStepperFlowFromContext,
 } from 'calypso/layout/utils';
-import { hasRenewalItem } from 'calypso/lib/cart-values/cart-items';
 import { useDispatch } from 'calypso/state';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import type { ResponseCart } from '@automattic/shopping-cart';
