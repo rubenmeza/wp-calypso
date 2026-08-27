@@ -1,3 +1,5 @@
+import paymentGatewayLoader from 'calypso/lib/payment-gateway-loader';
+import { getStripeConfiguration } from 'calypso/lib/store-transactions';
 import { useCalypsoCheckoutLogError } from './use-calypso-checkout-log-error';
 import { useEnabledCheckoutHost } from './use-checkout-host-bridge';
 import type { CheckoutHostContext } from '@automattic/checkout';
@@ -20,4 +22,20 @@ export function useCheckoutLogError(): CheckoutHostContext[ 'logError' ] {
 	const host = useEnabledCheckoutHost();
 	const calypsoLogError = useCalypsoCheckoutLogError();
 	return host?.logError ?? calypsoLogError;
+}
+
+/** Stripe's publishable key and account for a given transaction. */
+export function useCheckoutStripeConfiguration(): CheckoutHostContext[ 'getStripeConfiguration' ] {
+	const host = useEnabledCheckoutHost();
+	return host?.getStripeConfiguration ?? getStripeConfiguration;
+}
+
+/** Loads a payment partner's own SDK, which some processors need at submit time. */
+export function useCheckoutPaymentGatewayLoader(): CheckoutHostContext[ 'loadPaymentGateway' ] {
+	const host = useEnabledCheckoutHost();
+	return (
+		host?.loadPaymentGateway ??
+		( ( gatewayUrl: string, gatewayNamespace: string ) =>
+			paymentGatewayLoader.ready( gatewayUrl, gatewayNamespace ) )
+	);
 }

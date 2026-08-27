@@ -1,11 +1,22 @@
 import type { GetThankYouUrl } from '../hooks/use-get-thank-you-url';
 import type { StripeConfiguration } from '@automattic/calypso-stripe';
+import type { CheckoutHostContext } from '@automattic/checkout';
 import type { ResponseCart } from '@automattic/shopping-cart';
 import type { ManagedContactDetails } from '@automattic/wpcom-checkout';
 import type { Stripe } from '@stripe/stripe-js';
 import type { CalypsoDispatch } from 'calypso/state/types';
 
 export interface PaymentProcessorOptions {
+	/**
+	 * Stripe's publishable key and account, and the gateway loader for the
+	 * partner SDKs a processor pulls in at submit time. Passed in rather than
+	 * read from the host context, which a processor cannot reach: they are plain
+	 * async functions, not components.
+	 */
+	getStripeConfiguration: CheckoutHostContext[ 'getStripeConfiguration' ];
+	loadPaymentGateway: CheckoutHostContext[ 'loadPaymentGateway' ];
+	/** For the account a logged-out shopper creates on the way through. */
+	recordRecaptchaAction: CheckoutHostContext[ 'recordRecaptchaAction' ];
 	includeDomainDetails: boolean;
 	includeGSuiteDetails: boolean;
 	isAkismetSitelessCheckout: boolean;

@@ -1,10 +1,9 @@
 import config from '@automattic/calypso-config';
 import i18n from 'i18n-calypso';
-import { recordGoogleRecaptchaAction } from 'calypso/lib/analytics/recaptcha';
 import { getLocaleSlug } from 'calypso/lib/i18n-utils';
 import getToSAcceptancePayload from 'calypso/lib/tos-acceptance-tracking';
-import wp from 'calypso/lib/wp';
 import { stringifyBody } from 'calypso/state/login/utils';
+import type { PaymentProcessorOptions } from './types/payment-processors';
 
 interface CreateAccountResponse {
 	success: boolean;
@@ -22,7 +21,16 @@ function isCreateAccountResponse( response: unknown ): response is CreateAccount
 	return true;
 }
 
-async function createAccountCallback( response: CreateAccountResponse ): Promise< void > {
+/**
+ * What creating an account needs from the host: a REST client to register
+ * through and to hold the resulting token, and the reCAPTCHA transport.
+ */
+type AccountCreationServices = Pick< PaymentProcessorOptions, 'wpcom' | 'recordRecaptchaAction' >;
+
+async function createAccountCallback(
+	response: CreateAccountResponse,
+	wp: AccountCreationServices[ 'wpcom' ]
+): Promise< void > {
 	if ( ! response.bearer_token ) {
 		return;
 	}
@@ -49,12 +57,14 @@ export async function createAccount( {
 	email,
 	siteId,
 	recaptchaClientId,
+	wpcom: wp,
+	recordRecaptchaAction,
 }: {
 	signupFlowName: string;
 	email: string | undefined;
 	siteId: number | undefined;
 	recaptchaClientId: number | undefined;
-} ): Promise< CreateAccountResponse > {
+} & AccountCreationServices ): Promise< CreateAccountResponse > {
 	let newSiteParams = null;
 	try {
 		newSiteParams = JSON.parse( window.localStorage.getItem( 'siteParams' ) || '{}' );
@@ -68,10 +78,7 @@ export async function createAccount( {
 	let recaptchaError = undefined;
 
 	if ( isRecaptchaLoaded ) {
-		recaptchaToken = await recordGoogleRecaptchaAction(
-			recaptchaClientId,
-			'calypso/signup/formSubmit'
-		);
+		recaptchaToken = await recordRecaptchaAction( recaptchaClientId, 'calypso/signup/formSubmit' );
 
 		if ( ! recaptchaToken ) {
 			recaptchaError = 'recaptcha_failed';
@@ -103,7 +110,7 @@ export async function createAccount( {
 			throw new Error( 'Failed to create account' );
 		}
 
-		createAccountCallback( response );
+		createAccountCallback( response, wp );
 		return response;
 	} catch ( error ) {
 		const errorMessage = ( error as Error )?.message
