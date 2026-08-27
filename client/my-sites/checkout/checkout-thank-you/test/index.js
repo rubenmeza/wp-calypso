@@ -3,6 +3,7 @@
  */
 
 import { PLAN_PREMIUM, PLAN_PERSONAL } from '@automattic/calypso-products';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
@@ -77,6 +78,9 @@ const initialState = {
 describe( 'CheckoutThankYou', () => {
 	let originalScrollTo;
 	let store;
+	// The app's own controller wraps every route in one of these; the checkout
+	// reads site facts through a shared query now, so the test needs it too.
+	const queryClient = new QueryClient( { defaultOptions: { queries: { retry: false } } } );
 
 	beforeAll( () => {
 		originalScrollTo = window.scrollTo;
@@ -96,18 +100,22 @@ describe( 'CheckoutThankYou', () => {
 	describe( 'Basic tests', () => {
 		test( 'should not blow up and have proper CSS class', () => {
 			const { container } = render(
-				<Provider store={ store }>
-					<CheckoutThankYou { ...defaultProps } />
-				</Provider>
+				<QueryClientProvider client={ queryClient }>
+					<Provider store={ store }>
+						<CheckoutThankYou { ...defaultProps } />
+					</Provider>
+				</QueryClientProvider>
 			);
 			expect( container.firstChild ).toHaveClass( 'checkout-thank-you' );
 		} );
 
 		test( 'Show WordPressLogo when there are no purchase but a receipt is present', () => {
 			const { container } = render(
-				<Provider store={ store }>
-					<CheckoutThankYou { ...defaultProps } receiptId={ 12 } />
-				</Provider>
+				<QueryClientProvider client={ queryClient }>
+					<Provider store={ store }>
+						<CheckoutThankYou { ...defaultProps } receiptId={ 12 } />
+					</Provider>
+				</QueryClientProvider>
 			);
 			// TODO: `WordPressLogo` should probably be updated to pass through props like `data-testid`
 			expect( container.querySelector( '.checkout-thank-you__logo' ) ).toBeVisible();
@@ -135,9 +143,11 @@ describe( 'CheckoutThankYou', () => {
 		};
 
 		render(
-			<Provider store={ store }>
-				<CheckoutThankYou { ...props } />
-			</Provider>
+			<QueryClientProvider client={ queryClient }>
+				<Provider store={ store }>
+					<CheckoutThankYou { ...props } />
+				</Provider>
+			</QueryClientProvider>
 		);
 
 		expect( await screen.getByTestId( 'component--plan-only-thank-you' ) ).toBeInTheDocument();
@@ -164,9 +174,11 @@ describe( 'CheckoutThankYou', () => {
 		};
 
 		render(
-			<Provider store={ store }>
-				<CheckoutThankYou { ...props } />
-			</Provider>
+			<QueryClientProvider client={ queryClient }>
+				<Provider store={ store }>
+					<CheckoutThankYou { ...props } />
+				</Provider>
+			</QueryClientProvider>
 		);
 
 		expect( await screen.getByTestId( 'component--plan-only-thank-you' ) ).toBeInTheDocument();
@@ -199,9 +211,11 @@ describe( 'CheckoutThankYou', () => {
 
 		it( 'renders the DomainOnly page when purchasing a domain in a domain-only site flow', () => {
 			render(
-				<Provider store={ store }>
-					<CheckoutThankYou { ...props } domainOnlySiteFlow />
-				</Provider>
+				<QueryClientProvider client={ queryClient }>
+					<Provider store={ store }>
+						<CheckoutThankYou { ...props } domainOnlySiteFlow />
+					</Provider>
+				</QueryClientProvider>
 			);
 
 			expect( screen.getByTestId( 'component--domain-only-thank-you' ) ).toBeVisible();
@@ -209,9 +223,11 @@ describe( 'CheckoutThankYou', () => {
 
 		it( 'does not render the DomainOnly page when purchasing a domain outside a domain-only site flow', () => {
 			render(
-				<Provider store={ store }>
-					<CheckoutThankYou { ...props } domainOnlySiteFlow={ false } />
-				</Provider>
+				<QueryClientProvider client={ queryClient }>
+					<Provider store={ store }>
+						<CheckoutThankYou { ...props } domainOnlySiteFlow={ false } />
+					</Provider>
+				</QueryClientProvider>
 			);
 
 			expect( screen.queryByTestId( 'component--domain-only-thank-you' ) ).not.toBeInTheDocument();

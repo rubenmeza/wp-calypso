@@ -11,9 +11,8 @@ import {
 	useSelect as useDataStoreSelect,
 } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
-import { useSelector } from 'calypso/state';
-import { getSelectedSiteId, getSelectedSiteSlug } from 'calypso/state/ui/selectors';
 import { useCheckoutCartKey } from './use-checkout-host-bridge';
+import { useCheckoutSelectedSiteId, useCheckoutSiteFacts } from './use-checkout-site-facts';
 
 const HELP_CENTER_STORE = HelpCenter.register();
 
@@ -22,8 +21,8 @@ export const useCheckoutHelpCenter = (): {
 	helpCenterButtonCopy?: string;
 	helpCenterButtonLink: string;
 } => {
-	const siteId = useSelector( getSelectedSiteId );
-	const siteSlug = useSelector( getSelectedSiteSlug );
+	const siteId = useCheckoutSelectedSiteId();
+	const { slug: siteSlug } = useCheckoutSiteFacts( siteId );
 
 	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
