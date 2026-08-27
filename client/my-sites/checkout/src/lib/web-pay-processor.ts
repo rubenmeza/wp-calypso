@@ -1,6 +1,5 @@
 import { makeSuccessResponse, makeErrorResponse } from '@automattic/composite-checkout';
 import debugFactory from 'debug';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { recordTransactionBeginAnalytics } from '../lib/analytics';
 import { logStashEvent } from '../lib/error-logging';
 import getDomainDetails from './get-domain-details';
@@ -37,9 +36,7 @@ export default async function webPayProcessor(
 	if ( ! isValidWebPayTransactionData( submitData ) ) {
 		throw new Error( 'Required purchase data is missing' );
 	}
-	transactionOptions.reduxDispatch(
-		recordTransactionBeginAnalytics( { paymentMethodId: webPaymentType } )
-	);
+	recordTransactionBeginAnalytics( transactionOptions, { paymentMethodId: webPaymentType } );
 
 	const {
 		includeDomainDetails,
@@ -94,12 +91,10 @@ export default async function webPayProcessor(
 		.then( makeSuccessResponse )
 		.catch( ( error: Error ) => {
 			debug( 'transaction failed' );
-			transactionOptions.reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_web_pay_transaction_failed', {
-					payment_intent_id: paymentIntentId ?? '',
-					error: error.message,
-				} )
-			);
+			transactionOptions.recordEvent( 'calypso_checkout_web_pay_transaction_failed', {
+				payment_intent_id: paymentIntentId ?? '',
+				error: error.message,
+			} );
 			logStashEvent( logError, 'calypso_checkout_web_pay_transaction_failed', {
 				payment_intent_id: paymentIntentId ?? '',
 				tags: [ `payment_intent_id:${ paymentIntentId }` ],

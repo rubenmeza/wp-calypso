@@ -78,7 +78,7 @@ import { prepareDomainContactValidationRequest } from 'calypso/my-sites/checkout
 import SitePreview from 'calypso/my-sites/customer-home/cards/features/site-preview';
 import useOneDollarOfferTrack from 'calypso/my-sites/plans/hooks/use-onedollar-offer-track';
 import { siteHasPaidPlan } from 'calypso/signup/steps/site-picker/site-picker-submit';
-import { useDispatch as useReduxDispatch, useSelector } from 'calypso/state';
+import { useSelector } from 'calypso/state';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
 import { getIsOnboardingAffiliateFlow } from 'calypso/state/signup/flow/selectors';
 import { getWpComDomainBySiteId } from 'calypso/state/sites/domains/selectors';
@@ -518,7 +518,6 @@ export default function CheckoutMainContent( {
 		showSitePreview && selectedSiteData && wpcomDomain && ! isSignupCheckout && ! isDIFMInCart;
 
 	const couponFieldStateProps = useCouponFieldState( applyCoupon );
-	const reduxDispatch = useReduxDispatch();
 	const isAkismetCheckout = useIsAkismetCheckout();
 	const isJetpackCheckout = useIsJetpackCheckout();
 
@@ -924,7 +923,7 @@ export default function CheckoutMainContent( {
 									showErrorMessageBriefly,
 									applyDomainContactValidationResults,
 									clearDomainContactErrorMessages,
-									reduxDispatch,
+									recordEvent,
 									translate,
 									shouldDisplayValidationErrors
 								);
