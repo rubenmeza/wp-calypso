@@ -15,13 +15,14 @@ import { CalypsoCheckoutHost } from './src/components/calypso-checkout-host';
 import { CheckoutContent } from './src/components/checkout-content';
 import CheckoutMain from './src/components/checkout-main';
 import { CheckoutStoreProvider } from './src/components/checkout-store-provider';
+import { calypsoCheckoutLogError } from './src/hooks/use-calypso-checkout-log-error';
 import useCheckoutSiteSlug from './src/hooks/use-checkout-site-slug';
-import { logStashLoadErrorEvent } from './src/lib/analytics';
+import { logStashLoadErrorEvent } from './src/lib/error-logging';
 import { isSharedFoundationEnabled } from './src/lib/shared-foundation';
 import type { SitelessCheckoutType } from '@automattic/wpcom-checkout';
 
 const logCheckoutError = ( error: Error ) => {
-	logStashLoadErrorEvent( 'checkout_system_decider', error );
+	logStashLoadErrorEvent( calypsoCheckoutLogError, 'checkout_system_decider', error );
 };
 
 /** The page the checkout fills when the full-page route is the host. */

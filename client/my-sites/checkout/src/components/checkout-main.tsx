@@ -41,6 +41,7 @@ import {
 	useCheckoutCartKey,
 } from '../hooks/use-checkout-host-bridge';
 import {
+	useCheckoutLogError,
 	useCheckoutPaymentGatewayLoader,
 	useCheckoutStripeConfiguration,
 } from '../hooks/use-checkout-service-bridge';
@@ -58,8 +59,8 @@ import usePrepareProductsForCart from '../hooks/use-prepare-products-for-cart';
 import useRecordCartLoaded from '../hooks/use-record-cart-loaded';
 import useRecordCheckoutLoaded from '../hooks/use-record-checkout-loaded';
 import useRemoveFromCartAndRedirect from '../hooks/use-remove-from-cart-and-redirect';
-import { logStashLoadErrorEvent, logStashEvent, convertErrorToString } from '../lib/analytics';
 import blikProcessor from '../lib/blik-processor';
+import { logStashLoadErrorEvent, logStashEvent, convertErrorToString } from '../lib/error-logging';
 import existingCardProcessor from '../lib/existing-card-processor';
 import existingPayPalPPCPProcessor from '../lib/existing-paypal-ppcp-processor';
 import freePurchaseProcessor from '../lib/free-purchase-processor';
@@ -164,6 +165,7 @@ export default function CheckoutMain( {
 	const recordEvent = useCheckoutRecordEvent();
 	const recordCartAddEvent = useCheckoutRecordCartAddEvent();
 	const recordRecaptchaAction = useCheckoutRecordRecaptchaAction();
+	const logError = useCheckoutLogError();
 
 	const isJetpackNotAtomic =
 		useSelector( ( state ) => {
@@ -340,9 +342,9 @@ export default function CheckoutMain( {
 
 	const getThankYouUrl = useCallback( () => {
 		const url = getThankYouUrlBase();
-		logStashEvent( 'thank you url generated', { url }, 'info' );
+		logStashEvent( logError, 'thank you url generated', { url }, 'info' );
 		return url;
-	}, [ getThankYouUrlBase ] );
+	}, [ getThankYouUrlBase, logError ] );
 
 	const contactDetailsType = getContactDetailsType( responseCart );
 
@@ -351,7 +353,7 @@ export default function CheckoutMain( {
 	// Record errors adding products to the cart
 	useActOnceOnStrings( [ cartProductPrepError ].filter( isValueTruthy ), ( messages ) => {
 		messages.forEach( ( message ) => {
-			logStashEvent( 'calypso_composite_checkout_products_load_error', {
+			logStashEvent( logError, 'calypso_composite_checkout_products_load_error', {
 				error_message: String( message ),
 			} );
 			recordEvent( 'calypso_checkout_composite_products_load_error', {
@@ -362,7 +364,7 @@ export default function CheckoutMain( {
 
 	useActOnceOnStrings( [ cartLoadingError ].filter( isValueTruthy ), ( messages ) => {
 		messages.forEach( ( message ) => {
-			logStashEvent( 'calypso_checkout_composite_cart_error', {
+			logStashEvent( logError, 'calypso_checkout_composite_cart_error', {
 				type: cartLoadingErrorType ?? '',
 				message,
 			} );
@@ -493,7 +495,7 @@ export default function CheckoutMain( {
 			try {
 				recordCartAddEvent( cartItem );
 			} catch ( error ) {
-				logStashEvent( 'checkout_add_product_analytics_error', {
+				logStashEvent( logError, 'checkout_add_product_analytics_error', {
 					error: String( error ),
 				} );
 			}
@@ -501,7 +503,7 @@ export default function CheckoutMain( {
 				// Nothing needs to be done here. CartMessages will display the error to the user.
 			} );
 		},
-		[ addProductsToCart, recordCartAddEvent ]
+		[ addProductsToCart, logError, recordCartAddEvent ]
 	);
 
 	const isAkismetSitelessCheckout = responseCart.products.some(
@@ -514,6 +516,7 @@ export default function CheckoutMain( {
 			getStripeConfiguration,
 			loadPaymentGateway,
 			recordRecaptchaAction,
+			logError,
 			contactDetails,
 			createUserAndSiteBeforeTransaction,
 			getThankYouUrl,
@@ -534,6 +537,7 @@ export default function CheckoutMain( {
 			getStripeConfiguration,
 			loadPaymentGateway,
 			recordRecaptchaAction,
+			logError,
 			contactDetails,
 			createUserAndSiteBeforeTransaction,
 			getThankYouUrl,
@@ -714,7 +718,7 @@ export default function CheckoutMain( {
 
 	const onPageLoadError: CheckoutPageErrorCallback = useCallback(
 		( errorType, error, errorData ) => {
-			logStashLoadErrorEvent( errorType, error, errorData );
+			logStashLoadErrorEvent( logError, errorType, error, errorData );
 			function errorTypeToTracksEventName( type: string ): string {
 				switch ( type ) {
 					case 'page_load':
@@ -736,7 +740,7 @@ export default function CheckoutMain( {
 				...errorData,
 			} );
 		},
-		[ recordEvent ]
+		[ logError, recordEvent ]
 	);
 
 	// IMPORTANT NOTE: This will not be called for redirect payment methods like
@@ -784,7 +788,7 @@ export default function CheckoutMain( {
 
 	const handlePaymentMethodChanged = useCallback(
 		( method: string ) => {
-			logStashEvent( 'payment_method_select', { newMethodId: String( method ) }, 'info' );
+			logStashEvent( logError, 'payment_method_select', { newMethodId: String( method ) }, 'info' );
 			// Need to convert to the slug format used in old checkout so events are comparable
 			const rawPaymentMethodSlug = String( method );
 			const legacyPaymentMethodSlug = translateCheckoutPaymentMethodToTracksPaymentMethod(
@@ -792,7 +796,7 @@ export default function CheckoutMain( {
 			);
 			recordEvent( 'calypso_checkout_switch_to_' + legacyPaymentMethodSlug );
 		},
-		[ recordEvent ]
+		[ logError, recordEvent ]
 	);
 
 	// IMPORTANT NOTE: This will not be called for redirect payment methods like

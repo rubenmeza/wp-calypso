@@ -25,8 +25,9 @@ import { errorNotice, successNotice } from 'calypso/state/notices/actions';
 import { SUCCESS } from 'calypso/state/order-transactions/constants';
 import getOrderTransactionError from 'calypso/state/selectors/get-order-transaction-error';
 import { requestSite } from 'calypso/state/sites/actions';
+import { calypsoCheckoutLogError } from '../../src/hooks/use-calypso-checkout-log-error';
 import usePurchaseOrder from '../../src/hooks/use-purchase-order';
-import { logStashLoadErrorEvent } from '../../src/lib/analytics';
+import { logStashLoadErrorEvent } from '../../src/lib/error-logging';
 import {
 	PLAN_AND_DOMAIN_NOTICE_QUERY_VALUE,
 	appendNoticeQueryParam,
@@ -488,7 +489,7 @@ function displayRenewalSuccessNotice( {
 }
 
 const logCheckoutError = ( error: Error ) => {
-	logStashLoadErrorEvent( 'checkout_pending', error );
+	logStashLoadErrorEvent( calypsoCheckoutLogError, 'checkout_pending', error );
 };
 
 export default function CheckoutPendingWrapper( props: CheckoutPendingProps ) {

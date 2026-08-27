@@ -21,7 +21,8 @@ import getAvailableConciergeSessions from 'calypso/state/selectors/get-available
 import getConciergeNextAppointment from 'calypso/state/selectors/get-concierge-next-appointment';
 import getConciergeUserBlocked from 'calypso/state/selectors/get-concierge-user-blocked';
 import { getSelectedSiteId, getSelectedSiteSlug } from 'calypso/state/ui/selectors';
-import { logStashLoadErrorEvent } from '../checkout/src/lib/analytics';
+import { calypsoCheckoutLogError } from '../checkout/src/hooks/use-calypso-checkout-log-error';
+import { logStashLoadErrorEvent } from '../checkout/src/lib/error-logging';
 import {
 	getPurchaseListUrlFor,
 	getCancelPurchaseUrlFor,
@@ -38,7 +39,7 @@ import './styles.scss';
 function useLogPurchasesError( message: string ) {
 	return useCallback(
 		( error: Error ) => {
-			logStashLoadErrorEvent( 'site_level_purchases', error, { message } );
+			logStashLoadErrorEvent( calypsoCheckoutLogError, 'site_level_purchases', error, { message } );
 		},
 		[ message ]
 	);

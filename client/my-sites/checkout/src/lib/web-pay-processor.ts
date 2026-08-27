@@ -1,7 +1,8 @@
 import { makeSuccessResponse, makeErrorResponse } from '@automattic/composite-checkout';
 import debugFactory from 'debug';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { logStashEvent, recordTransactionBeginAnalytics } from '../lib/analytics';
+import { recordTransactionBeginAnalytics } from '../lib/analytics';
+import { logStashEvent } from '../lib/error-logging';
 import getDomainDetails from './get-domain-details';
 import getPostalCode from './get-postal-code';
 import {
@@ -40,8 +41,14 @@ export default async function webPayProcessor(
 		recordTransactionBeginAnalytics( { paymentMethodId: webPaymentType } )
 	);
 
-	const { includeDomainDetails, includeGSuiteDetails, responseCart, siteId, contactDetails } =
-		transactionOptions;
+	const {
+		includeDomainDetails,
+		includeGSuiteDetails,
+		responseCart,
+		siteId,
+		contactDetails,
+		logError,
+	} = transactionOptions;
 
 	debug( 'formatting web-pay transaction', submitData );
 	const formattedTransactionData = createTransactionEndpointRequestPayload( {
@@ -70,6 +77,7 @@ export default async function webPayProcessor(
 				debug( 'transaction requires authentication' );
 				paymentIntentId = stripeResponse.message.payment_intent_id;
 				await handle3DSChallenge(
+					logError,
 					transactionOptions.reduxDispatch,
 					submitData.stripe,
 					stripeResponse.message.payment_intent_client_secret,
@@ -92,13 +100,13 @@ export default async function webPayProcessor(
 					error: error.message,
 				} )
 			);
-			logStashEvent( 'calypso_checkout_web_pay_transaction_failed', {
+			logStashEvent( logError, 'calypso_checkout_web_pay_transaction_failed', {
 				payment_intent_id: paymentIntentId ?? '',
 				tags: [ `payment_intent_id:${ paymentIntentId }` ],
 				error: error.message,
 			} );
 
-			handle3DSInFlightError( error, paymentIntentId );
+			handle3DSInFlightError( logError, error, paymentIntentId );
 
 			// Errors here are "expected" errors, meaning that they (hopefully) come
 			// from the endpoint and not from some bug in the frontend code.

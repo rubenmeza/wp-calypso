@@ -18,7 +18,8 @@ import {
 	ReceiptTitle,
 } from 'calypso/me/purchases/billing-history/receipt';
 import titles from 'calypso/me/purchases/titles';
-import { logStashLoadErrorEvent } from 'calypso/my-sites/checkout/src/lib/analytics';
+import { calypsoCheckoutLogError } from 'calypso/my-sites/checkout/src/hooks/use-calypso-checkout-log-error';
+import { logStashLoadErrorEvent } from 'calypso/my-sites/checkout/src/lib/error-logging';
 import PurchasesNavigation from 'calypso/my-sites/purchases/navigation';
 import { useSelector, useDispatch } from 'calypso/state';
 import { recordGoogleEvent } from 'calypso/state/analytics/actions';
@@ -33,7 +34,9 @@ import type { IAppState } from 'calypso/state/types';
 function useLogBillingHistoryError( message: string ) {
 	return useCallback(
 		( error: Error ) => {
-			logStashLoadErrorEvent( 'site_level_billing_history', error, { message } );
+			logStashLoadErrorEvent( calypsoCheckoutLogError, 'site_level_billing_history', error, {
+				message,
+			} );
 		},
 		[ message ]
 	);
