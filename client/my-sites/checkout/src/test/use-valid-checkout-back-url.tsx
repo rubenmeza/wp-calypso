@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import getInitialQueryArguments from 'calypso/state/selectors/get-initial-query-arguments';
 import useValidCheckoutBackUrl from '../hooks/use-valid-checkout-back-url';
+import { CalypsoCheckoutSlots } from './util/checkout-slots';
 import type { Site } from '@automattic/api-core';
 import type { ReactNode } from 'react';
 
@@ -51,8 +52,12 @@ const SITE_SLUG = 'example-site.com';
 
 function renderBackUrl() {
 	const queryClient = new QueryClient( { defaultOptions: { queries: { retry: false } } } );
+	// The initial query arguments reach the hook through a slot now, so the
+	// test has to supply the bag Calypso really mounts.
 	const wrapper = ( { children }: { children: ReactNode } ) => (
-		<QueryClientProvider client={ queryClient }>{ children }</QueryClientProvider>
+		<QueryClientProvider client={ queryClient }>
+			<CalypsoCheckoutSlots>{ children }</CalypsoCheckoutSlots>
+		</QueryClientProvider>
 	);
 	return renderHook( () => useValidCheckoutBackUrl( SITE_SLUG ), { wrapper } );
 }

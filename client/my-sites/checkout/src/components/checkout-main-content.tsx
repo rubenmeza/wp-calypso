@@ -79,8 +79,6 @@ import SitePreview from 'calypso/my-sites/customer-home/cards/features/site-prev
 import useOneDollarOfferTrack from 'calypso/my-sites/plans/hooks/use-onedollar-offer-track';
 import { siteHasPaidPlan } from 'calypso/signup/steps/site-picker/site-picker-submit';
 import { useSelector } from 'calypso/state';
-import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
-import { getIsOnboardingAffiliateFlow } from 'calypso/state/signup/flow/selectors';
 import { getWpComDomainBySiteId } from 'calypso/state/sites/domains/selectors';
 import { getSelectedSite } from 'calypso/state/ui/selectors';
 import { useUpdateCachedContactDetails } from '../hooks/use-cached-contact-details';
@@ -96,6 +94,8 @@ import {
 	useIsAkismetCheckout,
 	useIsJetpackCheckout,
 	useIsWcMobileApp,
+	useCheckoutIsOnboardingAffiliateFlow,
+	useCheckoutPreviousRoute,
 } from '../hooks/use-checkout-surface';
 import { useCheckoutVatDetails } from '../hooks/use-checkout-vat-details';
 import useCouponFieldState from '../hooks/use-coupon-field-state';
@@ -526,7 +526,7 @@ export default function CheckoutMainContent( {
 		isJetpackCheckout,
 	} );
 	const isPresalesChatEnabled =
-		! useSelector( getIsOnboardingAffiliateFlow ) &&
+		! useCheckoutIsOnboardingAffiliateFlow() &&
 		responseCart?.products?.length > 0 &&
 		presalesChatKey !== 'wpcom';
 	usePresalesChat( presalesChatKey, isPresalesChatEnabled );
@@ -595,7 +595,7 @@ export default function CheckoutMainContent( {
 		: String( translate( 'Please wait…' ) );
 
 	const forceCheckoutBackUrl = useValidCheckoutBackUrl( siteUrl, siteId );
-	const previousPath = useSelector( getPreviousRoute );
+	const previousPath = useCheckoutPreviousRoute();
 	const goToPreviousPage = () =>
 		leaveCheckout( {
 			siteSlug: siteUrl,

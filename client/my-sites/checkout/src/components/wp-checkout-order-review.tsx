@@ -15,12 +15,12 @@ import {
 	getCurrentUser,
 	getCurrentUserEmail,
 } from 'calypso/state/current-user/selectors';
-import {
-	getIsOnboardingAffiliateFlow,
-	getIsOnboardingUnifiedFlow,
-} from 'calypso/state/signup/flow/selectors';
 import getSelectedSite from 'calypso/state/ui/selectors/get-selected-site';
 import { useCheckoutCartKey, useCheckoutRecordEvent } from '../hooks/use-checkout-host-bridge';
+import {
+	useCheckoutIsOnboardingAffiliateFlow,
+	useCheckoutIsOnboardingUnifiedFlow,
+} from '../hooks/use-checkout-surface';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import { useMobileCheckoutStickySummaryExperiment } from '../hooks/use-mobile-checkout-sticky-summary-experiment';
 import Coupon from './coupon';
@@ -241,8 +241,8 @@ export function CouponFieldArea( {
 	const { formStatus } = useFormStatus();
 	const translate = useTranslate();
 	const { setCouponFieldValue } = couponFieldStateProps;
-	const isOnboardingAffiliateFlow = useSelector( getIsOnboardingAffiliateFlow );
-	const isOnboardingUnifiedFlow = useSelector( getIsOnboardingUnifiedFlow );
+	const isOnboardingAffiliateFlow = useCheckoutIsOnboardingAffiliateFlow();
+	const isOnboardingUnifiedFlow = useCheckoutIsOnboardingUnifiedFlow();
 
 	useEffect( () => {
 		if ( couponStatus === 'applied' ) {
