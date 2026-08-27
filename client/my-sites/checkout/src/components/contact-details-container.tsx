@@ -10,9 +10,8 @@ import { Field, styled } from '@automattic/wpcom-checkout';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { useTranslate } from 'i18n-calypso';
 import { Fragment } from 'react';
-import isAkismetCheckout from 'calypso/lib/akismet/is-akismet-checkout';
-import isJetpackCheckout from 'calypso/lib/jetpack/is-jetpack-checkout';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
+import { useIsAkismetCheckout, useIsJetpackCheckout } from '../hooks/use-checkout-surface';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import {
@@ -57,6 +56,8 @@ export default function ContactDetailsContainer( {
 	isLoggedOutCart: boolean;
 } ) {
 	const translate = useTranslate();
+	const isJetpackCheckout = useIsJetpackCheckout();
+	const isAkismetCheckout = useIsAkismetCheckout();
 	const [ , isCheckoutUiRedesignV1 ] = useCheckoutUiRedesignExperiment();
 	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
@@ -173,7 +174,7 @@ export default function ContactDetailsContainer( {
 						fullWidthCountryField={ isCheckoutUiRedesignV1 }
 					/>
 					{ /* For Jetpack and Akismet - we want to inform users that by continuing checkout process they create WordPress.com account */ }
-					{ ( isJetpackCheckout() || isAkismetCheckout() ) && isLoggedOutCart && (
+					{ ( isJetpackCheckout || isAkismetCheckout ) && isLoggedOutCart && (
 						<NewAccountCreationDisclaimer>
 							{ translate(
 								'%(serviceName)s is powered by WordPress.com. If you don’t already have a WordPress.com account, checking out below will create one for you with this email address. Accounts are subject to the {{tosLink}}Terms of Service{{/tosLink}} and {{ppLink}}Privacy Policy{{/ppLink}}.',
@@ -195,7 +196,7 @@ export default function ContactDetailsContainer( {
 										),
 									},
 									args: {
-										serviceName: isJetpackCheckout() ? 'Jetpack' : 'Akismet',
+										serviceName: isJetpackCheckout ? 'Jetpack' : 'Akismet',
 									},
 								}
 							) }

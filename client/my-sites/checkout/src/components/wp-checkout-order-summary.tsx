@@ -39,12 +39,12 @@ import { useViewportMatch } from '@wordpress/compose';
 import { useTranslate } from 'i18n-calypso';
 import * as React from 'react';
 import { hasFreeCouponTransfersOnly } from 'calypso/lib/cart-values/cart-items';
-import { isWcMobileApp } from 'calypso/lib/mobile-app';
 import useEquivalentMonthlyTotals, {
 	getSubtotalBeforeDiscounts,
 } from 'calypso/my-sites/checkout/utils/use-equivalent-monthly-totals';
 import { useCheckoutCurrentPlanSlug } from '../hooks/use-checkout-current-plan-slug';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
+import { useIsWcMobileApp } from '../hooks/use-checkout-surface';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import getAkismetProductFeatures from '../lib/get-akismet-product-features';
 import getJetpackProductFeatures from '../lib/get-jetpack-product-features';
@@ -110,6 +110,8 @@ export function CheckoutSummaryFeaturedList( {
 		volume?: number
 	) => void;
 } ) {
+	const isWcMobile = useIsWcMobileApp();
+
 	// Return early if the cart is only Chargebacks fees
 	if ( responseCart.products.every( isChargeback || isCredits ) ) {
 		return null;
@@ -118,8 +120,6 @@ export function CheckoutSummaryFeaturedList( {
 	const hasRenewalInCart = responseCart.products.some(
 		( product ) => product.extra.purchaseType === 'renewal'
 	);
-
-	const isWcMobile = isWcMobileApp();
 
 	const plan = responseCart.products.find( ( product ) => isPlan( product ) );
 	const hasMonthlyPlanInCart = Boolean( plan && isMonthly( plan?.product_slug ) );

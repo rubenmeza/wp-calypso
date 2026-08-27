@@ -1,9 +1,9 @@
 import { localizeUrl } from '@automattic/i18n-utils';
 import { useTranslate } from 'i18n-calypso';
-import isAkismetCheckout from 'calypso/lib/akismet/is-akismet-checkout';
 import TosText from 'calypso/me/purchases/manage-purchase/payment-method-selector/tos-text';
 import CheckoutTermsItem from 'calypso/my-sites/checkout/src/components/checkout-terms-item';
 import { useCheckoutRecordGaEvent } from '../hooks/use-checkout-analytics-bridge';
+import { useIsAkismetCheckout } from '../hooks/use-checkout-surface';
 
 export const TermsOfService = ( {
 	hasRenewableSubscription,
@@ -18,6 +18,7 @@ export const TermsOfService = ( {
 } ) => {
 	const translate = useTranslate();
 	const recordGaEvent = useCheckoutRecordGaEvent();
+	const isAkismet = useIsAkismetCheckout();
 	const recordTermsAndConditionsClick = () => {
 		recordGaEvent( 'Upgrades', 'Clicked Terms and Conditions Link' );
 	};
@@ -28,7 +29,7 @@ export const TermsOfService = ( {
 				link: (
 					<a
 						href={
-							isAkismetCheckout()
+							isAkismet
 								? localizeUrl( 'https://akismet.com/tos/' )
 								: localizeUrl( 'https://wordpress.com/tos/' )
 						}
@@ -43,7 +44,7 @@ export const TermsOfService = ( {
 		if ( ! isGiftPurchase && hasRenewableSubscription ) {
 			message = (
 				<TosText
-					isAkismetPurchase={ isAkismetCheckout() }
+					isAkismetPurchase={ isAkismet }
 					is100YearPlanPurchase={ is100YearPlanPurchase }
 					is100YearDomainPurchase={ is100YearDomainPurchase }
 				/>
