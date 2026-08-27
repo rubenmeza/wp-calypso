@@ -29,13 +29,13 @@ import {
 	useRenewalPricingExperiment,
 } from 'calypso/my-sites/plans-features-main/hooks/use-renewal-price-experiment';
 import { getSignupCompleteFlowName } from 'calypso/signup/storageUtils';
-import { useDispatch, useSelector } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
+import { useSelector } from 'calypso/state';
 import {
 	getIsOnboardingAffiliateFlow,
 	getIsOnboardingUnifiedFlow,
 } from 'calypso/state/signup/flow/selectors';
 import { getAffiliateCouponLabel } from '../../utils';
+import { useCheckoutRecordEvent } from '../hooks/use-checkout-host-bridge';
 import { useIsWcMobileApp } from '../hooks/use-checkout-surface';
 import { AkismetProQuantityDropDown } from './akismet-pro-quantity-dropdown';
 import { ItemVariationPicker } from './item-variation-picker';
@@ -103,7 +103,7 @@ export function WPOrderReviewLineItems( {
 	onRemoveProductClick?: ( label: string ) => void;
 	onRemoveProductCancel?: ( label: string ) => void;
 } ) {
-	const reduxDispatch = useDispatch();
+	const recordEvent = useCheckoutRecordEvent();
 	const creditsLineItem = getCreditsLineItemFromCart( responseCart );
 	const couponLineItem = getCouponLineItemFromCart( responseCart );
 	const isOnboardingAffiliateFlow = useSelector( getIsOnboardingAffiliateFlow );
@@ -169,18 +169,16 @@ export function WPOrderReviewLineItems( {
 				}
 			}
 
-			reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_variant_dropdown_open', {
-					has_wpcom_plan_in_cart: hasWPCOMPlanInCart,
-				} )
-			);
+			recordEvent( 'calypso_checkout_variant_dropdown_open', {
+				has_wpcom_plan_in_cart: hasWPCOMPlanInCart,
+			} );
 			setVariantOpenId( variantOpenId !== id ? id : null );
 		},
 		[
 			akQuantityOpenId,
 			hasWPCOMPlanInCart,
 			isAkismetProMultipleLicensesCart,
-			reduxDispatch,
+			recordEvent,
 			variantOpenId,
 		]
 	);
@@ -198,13 +196,11 @@ export function WPOrderReviewLineItems( {
 
 	const changeAkismetPro500CartQuantity = useCallback< OnChangeAkProQuantity >(
 		( uuid, productSlug, productId, prevQuantity, newQuantity ) => {
-			reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_akismet_pro_quantity_change', {
-					product_slug: productSlug,
-					prev_quantity: prevQuantity,
-					new_quantity: newQuantity,
-				} )
-			);
+			recordEvent( 'calypso_checkout_akismet_pro_quantity_change', {
+				product_slug: productSlug,
+				prev_quantity: prevQuantity,
+				new_quantity: newQuantity,
+			} );
 			replaceProductInCart( uuid, {
 				product_slug: productSlug,
 				product_id: productId,
@@ -213,7 +209,7 @@ export function WPOrderReviewLineItems( {
 				// Nothing needs to be done here. CartMessages will display the error to the user.
 			} );
 		},
-		[ replaceProductInCart, reduxDispatch ]
+		[ replaceProductInCart, recordEvent ]
 	);
 
 	return (
@@ -233,12 +229,10 @@ export function WPOrderReviewLineItems( {
 								}
 								removeProductFromCart={ removeProductFromCart }
 								onRemoveBundle={ ( groupId, memberCount ) => {
-									reduxDispatch(
-										recordTracksEvent( 'calypso_domain_bundle_removed_from_cart', {
-											domain_bundle_group_id: groupId,
-											domain_count: memberCount,
-										} )
-									);
+									recordEvent( 'calypso_domain_bundle_removed_from_cart', {
+										domain_bundle_group_id: groupId,
+										domain_count: memberCount,
+									} );
 								} }
 							/>
 						</WPOrderReviewListItem>
