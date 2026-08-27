@@ -3,9 +3,12 @@ import { Button, Modal, __experimentalHStack as HStack } from '@wordpress/compon
 import { useTranslate } from 'i18n-calypso';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import getPreviousRoute from '../../../../state/selectors/get-previous-route';
-import { useCheckoutHostClose, useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
+import {
+	useCheckoutHostClose,
+	useCheckoutCartKey,
+	useCheckoutRecordEvent,
+} from '../hooks/use-checkout-host-bridge';
 import useValidCheckoutBackUrl from '../hooks/use-valid-checkout-back-url';
 import { leaveCheckout } from '../lib/leave-checkout';
 
@@ -13,6 +16,7 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 	const [ isModalVisible, setIsModalVisible ] = useState( false );
 	const [ stepBackUrl, setStepBackUrl ] = useState< string | undefined >( undefined );
 	const forceCheckoutBackUrl = useValidCheckoutBackUrl( siteUrl );
+	const recordEvent = useCheckoutRecordEvent();
 	// When a flow supplies a dedicated "back to domains" URL, emptying the cart
 	// sends the user there rather than to the plan-step back URL — the plan they
 	// were choosing no longer exists, so the domain step is the right restart
@@ -46,7 +50,7 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 	} ) => {
 		const userHasClearedCart = options?.userHasClearedCart ?? false;
 		if ( ! options?.closedWithoutConfirmation ) {
-			recordTracksEvent( 'calypso_masterbar_checkout_close_modal_submitted', {
+			recordEvent( 'calypso_masterbar_checkout_close_modal_submitted', {
 				user_has_cleared_cart: userHasClearedCart,
 			} );
 		}
@@ -77,7 +81,7 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 		// over from an earlier `clickStepBack` whose modal was dismissed.
 		setStepBackUrl( undefined );
 		if ( shouldClearCartWhenLeaving && responseCart.products.length > 0 ) {
-			recordTracksEvent( 'calypso_masterbar_checkout_close_modal_displayed' );
+			recordEvent( 'calypso_masterbar_checkout_close_modal_displayed' );
 			setIsModalVisible( true );
 			return;
 		}
@@ -89,7 +93,7 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 	const clickStepBack = ( destinationUrl: string ) => {
 		setStepBackUrl( destinationUrl );
 		if ( shouldClearCartWhenLeaving && responseCart.products.length > 0 ) {
-			recordTracksEvent( 'calypso_masterbar_checkout_close_modal_displayed' );
+			recordEvent( 'calypso_masterbar_checkout_close_modal_displayed' );
 			setIsModalVisible( true );
 			return;
 		}
@@ -119,7 +123,7 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 		} catch ( err ) {
 			// Leave checkout even if a cart-clear fails so the user is never
 			// trapped on the modal, but record the failure so it isn't silent.
-			recordTracksEvent( 'calypso_masterbar_checkout_close_modal_clear_failed', {
+			recordEvent( 'calypso_masterbar_checkout_close_modal_clear_failed', {
 				error: err instanceof Error ? err.message : String( err ),
 			} );
 		}
