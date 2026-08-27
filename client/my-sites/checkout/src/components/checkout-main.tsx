@@ -23,9 +23,6 @@ import PageViewTracker from 'calypso/lib/analytics/page-view-tracker';
 import useSiteDomains from 'calypso/my-sites/checkout/src/hooks/use-site-domains';
 import { useSelector, useDispatch } from 'calypso/state';
 import hasGravatarDomainQueryParam from 'calypso/state/selectors/has-gravatar-domain-query-param';
-import isPrivateSite from 'calypso/state/selectors/is-private-site';
-import isAtomicSite from 'calypso/state/selectors/is-site-automated-transfer';
-import { isJetpackSite, isCommerceGardenSite } from 'calypso/state/sites/selectors';
 import useActOnceOnStrings from '../hooks/use-act-once-on-strings';
 import useAddProductsFromUrl from '../hooks/use-add-products-from-url';
 import {
@@ -45,6 +42,7 @@ import {
 	useCheckoutPaymentGatewayLoader,
 	useCheckoutStripeConfiguration,
 } from '../hooks/use-checkout-service-bridge';
+import { useCheckoutSiteFacts } from '../hooks/use-checkout-site-facts';
 import useCheckoutSiteSlug from '../hooks/use-checkout-site-slug';
 import { useCheckoutStoredPaymentMethods } from '../hooks/use-checkout-stored-payment-methods';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
@@ -167,14 +165,11 @@ export default function CheckoutMain( {
 	const recordRecaptchaAction = useCheckoutRecordRecaptchaAction();
 	const logError = useCheckoutLogError();
 
+	const site = useCheckoutSiteFacts( siteId );
 	const isJetpackNotAtomic =
-		useSelector( ( state ) => {
-			const isCommerce = siteId && isCommerceGardenSite( state, siteId );
-			return (
-				siteId && isJetpackSite( state, siteId ) && ! isAtomicSite( state, siteId ) && ! isCommerce
-			);
-		} ) || sitelessCheckoutType === 'jetpack';
-	const isPrivate = useSelector( ( state ) => siteId && isPrivateSite( state, siteId ) ) || false;
+		( site.isJetpack && ! site.isAtomic && ! site.isCommerceGarden ) ||
+		sitelessCheckoutType === 'jetpack';
+	const isPrivate = site.isPrivate;
 	const isGravatarDomain = useSelector( hasGravatarDomainQueryParam );
 	const cartKey = useCheckoutCartKey();
 	const getStripeConfiguration = useCheckoutStripeConfiguration();
