@@ -42,6 +42,7 @@ import { createStore } from 'redux';
 import useCartKey from '../../../use-cart-key';
 import useValidCheckoutBackUrl from '../../hooks/use-valid-checkout-back-url';
 import { leaveCheckout } from '../../lib/leave-checkout';
+import { createTestCheckoutHost } from '../../test/util/checkout-host';
 import { useCheckoutLeaveModal } from '../leave-checkout-modal';
 import type { CheckoutHostContext } from '@automattic/checkout';
 import type {
@@ -428,15 +429,12 @@ describe( 'useCheckoutLeaveModal.clickStepBack', () => {
 } );
 
 describe( 'useCheckoutLeaveModal with a checkout host mounted', () => {
-	const host: CheckoutHostContext = {
+	// The host's cart key is authoritative once the flag is on, so a host that
+	// reports none would put this checkout on a different cart than the fixture.
+	const host: CheckoutHostContext = createTestCheckoutHost( {
 		siteId: 1234,
-		navigate: jest.fn(),
-		close: jest.fn(),
-		onComplete: jest.fn(),
-		notices: { error: jest.fn(), info: jest.fn() },
-		urlParams: new URLSearchParams( '' ),
-		recordEvent: jest.fn(),
-	};
+		cartKey: NEW_SITE_CART_KEY,
+	} );
 
 	function buildHostWrapper( client: ReturnType< typeof createShoppingCartManagerClient > ) {
 		const Wrapper = buildWrapper( client );
