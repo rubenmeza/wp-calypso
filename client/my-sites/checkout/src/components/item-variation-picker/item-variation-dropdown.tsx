@@ -6,7 +6,7 @@ import {
 import { Gridicon } from '@automattic/components';
 import { useTranslate } from 'i18n-calypso';
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
-import isJetpackCheckout from 'calypso/lib/jetpack/is-jetpack-checkout';
+import { useIsJetpackCheckout } from '../../hooks/use-checkout-surface';
 import { JetpackItemVariantDropDownPrice } from './jetpack-variant-dropdown-price';
 import { CurrentOption, Dropdown, OptionList, Option } from './styles';
 import { ItemVariantDropDownPrice } from './variant-dropdown-price';
@@ -26,6 +26,8 @@ export const ItemVariationDropDown: FunctionComponent< ItemVariationPickerProps 
 	isOpen,
 } ) => {
 	const translate = useTranslate();
+	// Not `isJetpack` above, which asks whether a *variant* is a Jetpack product.
+	const isJetpackCheckoutSurface = useIsJetpackCheckout();
 	const [ highlightedVariantIndex, setHighlightedVariantIndex ] = useState< number | null >( null );
 
 	// Multi-year domain products must be compared by volume because they have the same product id.
@@ -131,7 +133,10 @@ export const ItemVariationDropDown: FunctionComponent< ItemVariationPickerProps 
 		);
 
 	return (
-		<Dropdown className={ isJetpackCheckout() ? 'is-jetpack' : '' } onKeyDown={ handleKeyDown }>
+		<Dropdown
+			className={ isJetpackCheckoutSurface ? 'is-jetpack' : '' }
+			onKeyDown={ handleKeyDown }
+		>
 			<CurrentOption
 				aria-label={ translate( 'Pick a product term' ) }
 				aria-expanded={ isOpen }

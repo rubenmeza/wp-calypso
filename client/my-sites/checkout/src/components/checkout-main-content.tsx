@@ -54,7 +54,6 @@ import Loading from 'calypso/components/loading';
 import { OnboardingProgress } from 'calypso/landing/stepper/declarative-flow/internals/steps-repository/components/onboarding-progress';
 import { useShowOnboardingProgress } from 'calypso/landing/stepper/declarative-flow/internals/steps-repository/components/onboarding-progress/use-show-onboarding-progress';
 import { useInitialIsInStepContainerV2FlowContext } from 'calypso/layout/utils';
-import isAkismetCheckout from 'calypso/lib/akismet/is-akismet-checkout';
 import {
 	hasGoogleApps,
 	hasDomainRegistration,
@@ -65,8 +64,6 @@ import {
 	hasPlan,
 } from 'calypso/lib/cart-values/cart-items';
 import { getGoogleMailServiceFamily } from 'calypso/lib/gsuite';
-import isJetpackCheckout from 'calypso/lib/jetpack/is-jetpack-checkout';
-import { isWcMobileApp } from 'calypso/lib/mobile-app';
 import { PerformanceTrackerStop } from 'calypso/lib/performance-tracking';
 import { usePresalesChat } from 'calypso/lib/presales-chat';
 import { areVatDetailsSame } from 'calypso/me/purchases/vat-info/are-vat-details-same';
@@ -97,6 +94,11 @@ import {
 	useCheckoutUrlParams,
 	useCheckoutCartKey,
 } from '../hooks/use-checkout-host-bridge';
+import {
+	useIsAkismetCheckout,
+	useIsJetpackCheckout,
+	useIsWcMobileApp,
+} from '../hooks/use-checkout-surface';
 import { useCheckoutVatDetails } from '../hooks/use-checkout-vat-details';
 import useCouponFieldState from '../hooks/use-coupon-field-state';
 import { validateContactDetails } from '../lib/contact-validation';
@@ -303,16 +305,19 @@ const OrderReviewTitle = () => {
 	);
 };
 
-const getPresalesChatKey = ( responseCart: ObjectWithProducts ) => {
+const getPresalesChatKey = (
+	responseCart: ObjectWithProducts,
+	surface: { isAkismetCheckout: boolean; isJetpackCheckout: boolean }
+) => {
 	const hasCartJetpackProductsOnly =
 		responseCart?.products?.length > 0 &&
 		responseCart?.products?.every( ( product ) =>
 			isJetpackPurchasableItem( product.product_slug )
 		);
 
-	if ( isAkismetCheckout() ) {
+	if ( surface.isAkismetCheckout ) {
 		return 'akismet';
-	} else if ( isJetpackCheckout() || hasCartJetpackProductsOnly ) {
+	} else if ( surface.isJetpackCheckout || hasCartJetpackProductsOnly ) {
 		return 'jpCheckout';
 	}
 
@@ -329,7 +334,7 @@ function CheckoutSidebarNudge( {
 } ) {
 	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
-	const isWcMobile = isWcMobileApp();
+	const isWcMobile = useIsWcMobileApp();
 	const isDIFMInCart = hasDIFMProduct( responseCart );
 	const hasMonthlyProduct = responseCart?.products?.some( isMonthlyProduct );
 	const isPurchaseRenewal = responseCart?.products?.some?.( ( product ) => product.is_renewal );
@@ -516,8 +521,13 @@ export default function CheckoutMainContent( {
 
 	const couponFieldStateProps = useCouponFieldState( applyCoupon );
 	const reduxDispatch = useReduxDispatch();
+	const isAkismetCheckout = useIsAkismetCheckout();
+	const isJetpackCheckout = useIsJetpackCheckout();
 
-	const presalesChatKey = getPresalesChatKey( responseCart );
+	const presalesChatKey = getPresalesChatKey( responseCart, {
+		isAkismetCheckout,
+		isJetpackCheckout,
+	} );
 	const isPresalesChatEnabled =
 		! useSelector( getIsOnboardingAffiliateFlow ) &&
 		responseCart?.products?.length > 0 &&
