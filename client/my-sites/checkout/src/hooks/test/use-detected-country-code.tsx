@@ -4,6 +4,7 @@
 import { isEnabled } from '@automattic/calypso-config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
+import { CalypsoCheckoutSlots } from '../../test/util/checkout-slots';
 import useDetectedCountryCode from '../use-detected-country-code';
 import type { ReactNode } from 'react';
 
@@ -50,12 +51,14 @@ function geoResponds( countryShort: string ) {
 	} );
 }
 
-function renderDetection() {
+function renderDetection( { withSlots = true }: { withSlots?: boolean } = {} ) {
 	const queryClient = new QueryClient( {
 		defaultOptions: { queries: { retry: false } },
 	} );
 	const wrapper = ( { children }: { children: ReactNode } ) => (
-		<QueryClientProvider client={ queryClient }>{ children }</QueryClientProvider>
+		<QueryClientProvider client={ queryClient }>
+			{ withSlots ? <CalypsoCheckoutSlots>{ children }</CalypsoCheckoutSlots> : children }
+		</QueryClientProvider>
 	);
 	return renderHook( () => useDetectedCountryCode(), { wrapper } );
 }
@@ -143,5 +146,25 @@ describe( 'country detection with the flag off', () => {
 
 		await waitFor( () => expect( mockFetch ).not.toHaveBeenCalled() );
 		expect( mockLoadCountryCodeFromGeoIP ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'country detection for a host that fills no slots', () => {
+	it( 'detects from the geo query as usual', async () => {
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
+
+		renderDetection( { withSlots: false } );
+
+		await waitFor( () => expect( mockLoadCountryCodeFromGeoIP ).toHaveBeenCalledWith( 'FR' ) );
+	} );
+
+	it( 'detects nothing with the flag off, rather than failing', async () => {
+		mockIsEnabled.mockReturnValue( false );
+
+		renderDetection( { withSlots: false } );
+
+		await waitFor( () => expect( mockFetch ).not.toHaveBeenCalled() );
+		expect( mockLoadCountryCodeFromGeoIP ).not.toHaveBeenCalled();
+		expect( mockGetCurrentUserCountryCode ).not.toHaveBeenCalled();
 	} );
 } );

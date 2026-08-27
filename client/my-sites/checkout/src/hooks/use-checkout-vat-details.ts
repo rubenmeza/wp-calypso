@@ -1,17 +1,35 @@
 import { updateUserTaxDetails } from '@automattic/api-core';
 import { userTaxDetailsQuery } from '@automattic/api-queries';
+import { formatVatDetails, useCheckoutSlots, useSlotHook } from '@automattic/checkout';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import useVatDetails, {
-	formatVatDetails,
-	vatDetailsQueryKey,
-} from 'calypso/me/purchases/vat-info/use-vat-details';
 import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import type { UserTaxFormData } from '@automattic/api-core';
+import type { CheckoutVatDetailsManager } from '@automattic/checkout';
 import type { VatDetails } from '@automattic/wpcom-checkout';
-import type { VatDetailsManager } from 'calypso/me/purchases/vat-info/use-vat-details';
 
 const emptyVatDetails: VatDetails = {};
+
+const noop = () => undefined;
+
+async function refuseToSave(): Promise< VatDetails > {
+	throw new Error( 'This checkout host cannot save VAT details without the shared foundation.' );
+}
+
+/**
+ * What a host that supplies no legacy VAT read sees with the flag off. Frozen at
+ * module scope so it keeps one identity across renders, the way a real manager
+ * does.
+ */
+const noVatDetails: CheckoutVatDetailsManager = {
+	vatDetails: emptyVatDetails,
+	isLoading: false,
+	isUpdating: false,
+	isUpdateSuccessful: false,
+	fetchError: null,
+	updateError: null,
+	setVatDetails: refuseToSave,
+};
 
 /**
  * A rejection from `/me/vat-info` carries an `error` code beside its message,
@@ -55,12 +73,19 @@ function withoutNulls( vatDetails: VatDetails ) {
  * Only one of the two ever fetches. Hooks cannot be called conditionally, so
  * both are mounted and the unselected one is disabled. Every reader inside
  * checkout goes through here; the `/me/purchases` screens keep the old path.
+ *
+ * The old path is a slot because it lives in `/me/purchases`, which only Calypso
+ * has. Calypso supplies it, so flag-off is unchanged there.
  */
-export function useCheckoutVatDetails(): VatDetailsManager {
+export function useCheckoutVatDetails(): CheckoutVatDetailsManager {
 	const useSharedQuery = isSharedFoundationEnabled();
 	const queryClient = useQueryClient();
+	const slots = useCheckoutSlots();
 
-	const legacy = useVatDetails( { enabled: ! useSharedQuery } );
+	const legacy = useSlotHook( slots.legacyReads?.useVatDetails, noVatDetails, {
+		enabled: ! useSharedQuery,
+	} );
+	const onVatDetailsSaved = useSlotHook( slots.legacyReads?.useOnVatDetailsSaved, noop );
 
 	const shared = useQuery( {
 		...userTaxDetailsQuery(),
@@ -76,11 +101,7 @@ export function useCheckoutVatDetails(): VatDetailsManager {
 			// The endpoint answers with what it saved, but types that answer as a
 			// partial record, so re-read it rather than assert the merge is whole.
 			queryClient.invalidateQueries( { queryKey: userTaxDetailsQuery().queryKey } );
-			// The `/me/purchases` screens read the older key in this same session.
-			queryClient.setQueryData( vatDetailsQueryKey, ( old: VatDetails | undefined ) => ( {
-				...old,
-				...saved,
-			} ) );
+			onVatDetailsSaved( saved );
 		},
 	} );
 

@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider, dehydrate } from '@tanstack/react-que
 import { renderHook, waitFor, act } from '@testing-library/react';
 import wp from 'calypso/lib/wp';
 import { shouldDehydrateQuery } from 'calypso/state/should-dehydrate-query';
+import { CalypsoCheckoutSlots } from '../../test/util/checkout-slots';
 import { useCheckoutVatDetails } from '../use-checkout-vat-details';
 import type { ReactNode } from 'react';
 
@@ -39,10 +40,12 @@ const savedVatDetails = {
 	address: '123 Main Street',
 };
 
-function renderVatDetails() {
+function renderVatDetails( { withSlots = true }: { withSlots?: boolean } = {} ) {
 	const queryClient = new QueryClient( { defaultOptions: { queries: { retry: false } } } );
 	const wrapper = ( { children }: { children: ReactNode } ) => (
-		<QueryClientProvider client={ queryClient }>{ children }</QueryClientProvider>
+		<QueryClientProvider client={ queryClient }>
+			{ withSlots ? <CalypsoCheckoutSlots>{ children }</CalypsoCheckoutSlots> : children }
+		</QueryClientProvider>
 	);
 	return { queryClient, ...renderHook( () => useCheckoutVatDetails(), { wrapper } ) };
 }
@@ -220,5 +223,43 @@ describe( 'the saved VAT details and the on-disk cache', () => {
 		await waitFor( () => expect( result.current.vatDetails ).toEqual( savedVatDetails ) );
 
 		expect( dehydrate( queryClient, { shouldDehydrateQuery } ).queries ).toHaveLength( 0 );
+	} );
+} );
+
+describe( 'the VAT details for a host that fills no slots', () => {
+	it( 'reads and writes through the shared query as usual', async () => {
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
+
+		const { result } = renderVatDetails( { withSlots: false } );
+
+		await waitFor( () => expect( result.current.vatDetails ).toEqual( savedVatDetails ) );
+
+		await act( async () => {
+			await result.current.setVatDetails( savedVatDetails );
+		} );
+
+		expect( mockSharedUpdate ).toHaveBeenCalledTimes( 1 );
+		expect( mockLegacyGet ).not.toHaveBeenCalled();
+	} );
+
+	it( 'answers with no details at all with the flag off, rather than failing', async () => {
+		mockIsEnabled.mockReturnValue( false );
+
+		const { result } = renderVatDetails( { withSlots: false } );
+
+		expect( result.current.vatDetails ).toEqual( {} );
+		expect( result.current.isLoading ).toBe( false );
+		expect( mockLegacyGet ).not.toHaveBeenCalled();
+		expect( mockSharedFetch ).not.toHaveBeenCalled();
+	} );
+
+	it( 'refuses a save with the flag off rather than dropping it silently', async () => {
+		mockIsEnabled.mockReturnValue( false );
+
+		const { result } = renderVatDetails( { withSlots: false } );
+
+		await expect( result.current.setVatDetails( savedVatDetails ) ).rejects.toThrow();
+		expect( mockLegacyPost ).not.toHaveBeenCalled();
+		expect( mockSharedUpdate ).not.toHaveBeenCalled();
 	} );
 } );

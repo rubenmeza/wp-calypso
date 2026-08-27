@@ -1,10 +1,9 @@
 import { geoLocationQuery } from '@automattic/api-queries';
+import { useCheckoutSlots, useSlotHook } from '@automattic/checkout';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch, useRegistry } from '@wordpress/data';
 import debugFactory from 'debug';
 import { useRef, useEffect } from 'react';
-import { useSelector } from 'calypso/state';
-import { getCurrentUserCountryCode } from 'calypso/state/current-user/selectors';
 import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 
@@ -15,10 +14,16 @@ const debug = debugFactory( 'calypso:composite-checkout:use-detected-country-cod
  * shared geo query, with it off from the country the Redux user record carries.
  * Both are the same geo-IP answer by a different route. The Redux read goes
  * away once the query is the only path.
+ *
+ * The Redux half is a slot because only Calypso has a Redux user record. A host
+ * without it detects nothing when the flag is off, which is the branch turning
+ * off rather than behaving differently — and no such host exists, because the
+ * flag being off is what keeps Calypso on its old path.
  */
 function useGeoCountryCode(): string | undefined {
 	const isGeoQueryEnabled = isSharedFoundationEnabled();
-	const userCountryCode = useSelector( getCurrentUserCountryCode );
+	const slots = useCheckoutSlots();
+	const userCountryCode = useSlotHook( slots.legacyReads?.useUserCountryCode, undefined );
 	const { data } = useQuery( {
 		...geoLocationQuery(),
 		enabled: isGeoQueryEnabled,
