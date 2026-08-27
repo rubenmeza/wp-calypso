@@ -10,7 +10,8 @@
 		{ "path": "../api-core" },
 		{ "path": "../api-queries" },
 		{ "path": "../calypso-stripe" },
-		{ "path": "../shopping-cart" }
+		{ "path": "../shopping-cart" },
+		{ "path": "../wpcom-checkout" }
 	],
 	"exclude": [ "**/__tests__/*", "**/__mocks__/*" ]
 }
