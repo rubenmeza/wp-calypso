@@ -32,13 +32,13 @@ import {
 	getTaxBreakdownLineItemsFromCart,
 	getTotalLineItemFromCart,
 	getCreditsLineItemFromCart,
+	hasFreeCouponTransfersOnly,
 } from '@automattic/wpcom-checkout';
 import { css, keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useViewportMatch } from '@wordpress/compose';
 import { useTranslate } from 'i18n-calypso';
 import * as React from 'react';
-import { hasFreeCouponTransfersOnly } from 'calypso/lib/cart-values/cart-items';
 import useEquivalentMonthlyTotals, {
 	getSubtotalBeforeDiscounts,
 } from 'calypso/my-sites/checkout/utils/use-equivalent-monthly-totals';

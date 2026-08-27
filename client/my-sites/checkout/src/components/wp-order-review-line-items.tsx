@@ -16,11 +16,12 @@ import {
 	getPartnerCoupon,
 	useRestorableProducts,
 	RemovedFromCartItem,
+	has100YearPlan,
+	getDomainRegistrations,
 } from '@automattic/wpcom-checkout';
 import styled from '@emotion/styled';
 import { getQueryArg } from '@wordpress/url';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { has100YearPlan, getDomainRegistrations } from 'calypso/lib/cart-values/cart-items';
 import { useGetProductVariants } from 'calypso/my-sites/checkout/src/hooks/product-variants';
 import { useMobileCheckoutStickySummaryExperiment } from 'calypso/my-sites/checkout/src/hooks/use-mobile-checkout-sticky-summary-experiment';
 import {

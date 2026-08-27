@@ -1,8 +1,8 @@
 import { Gridicon } from '@automattic/components';
+import { hasDIFMProduct } from '@automattic/wpcom-checkout';
 import styled from '@emotion/styled';
 import { useTranslate } from 'i18n-calypso';
 import { useMemo, type JSX } from 'react';
-import { hasDIFMProduct } from 'calypso/lib/cart-values/cart-items';
 import type { ResponseCart } from '@automattic/shopping-cart';
 import type { TranslateResult } from 'i18n-calypso';
 interface Props {
