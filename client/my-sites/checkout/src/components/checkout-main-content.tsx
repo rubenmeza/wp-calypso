@@ -97,6 +97,7 @@ import {
 	useCheckoutUrlParams,
 	useCheckoutCartKey,
 } from '../hooks/use-checkout-host-bridge';
+import { useCheckoutWpcom } from '../hooks/use-checkout-service-bridge';
 import { useCheckoutVatDetails } from '../hooks/use-checkout-vat-details';
 import useCouponFieldState from '../hooks/use-coupon-field-state';
 import { validateContactDetails } from '../lib/contact-validation';
@@ -479,6 +480,7 @@ export default function CheckoutMainContent( {
 
 	const searchParams = useCheckoutUrlParams();
 	const notices = useCheckoutNotices();
+	const wpcom = useCheckoutWpcom();
 	const recordEvent = useCheckoutRecordEvent();
 	const hostNavigate = useCheckoutHostNavigate();
 	const isOnboardingFlowCheckout = searchParams.get( 'flow' ) === ONBOARDING_FLOW;
@@ -910,6 +912,7 @@ export default function CheckoutMainContent( {
 									touchContactFields();
 								}
 								const validationResponse = await validateContactDetails(
+									wpcom,
 									contactInfo,
 									isLoggedOutCart,
 									responseCart,

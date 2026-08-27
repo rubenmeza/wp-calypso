@@ -174,7 +174,7 @@ export async function assignNewCardProcessor(
 				errors: [],
 			};
 		}
-		const contactValidationResponse = await getTaxValidationResult( contactInfo );
+		const contactValidationResponse = await getTaxValidationResult( wp, contactInfo );
 		if ( ! contactValidationResponse.success ) {
 			const errorMessage =
 				contactValidationResponse.messages_simple.length > 0

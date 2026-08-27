@@ -12,7 +12,6 @@ import { useTranslate } from 'i18n-calypso';
 import { getLocaleSlug } from 'calypso/lib/i18n-utils';
 import { login } from 'calypso/lib/paths';
 import { addQueryArgs } from 'calypso/lib/route';
-import wp from 'calypso/lib/wp';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import {
 	isCompleteAndValid,
@@ -22,6 +21,7 @@ import {
 	getSignupValidationErrorResponse,
 } from '../types/wpcom-store-state';
 import { isSharedFoundationEnabled } from './shared-foundation';
+import type { CheckoutHttpClient } from '@automattic/checkout';
 import type { RequestCartProduct, ResponseCart } from '@automattic/shopping-cart';
 import type {
 	ManagedContactDetails,
@@ -91,6 +91,7 @@ const getEmailTakenLoginRedirectMessage = (
 };
 
 async function runContactValidationCheck(
+	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails,
 	responseCart: ResponseCart
 ): Promise< DomainContactValidationResponse > {
@@ -99,11 +100,11 @@ async function runContactValidationCheck(
 
 	switch ( contactDetailsType ) {
 		case 'tax':
-			return getTaxValidationResult( contactInfo );
+			return getTaxValidationResult( wpcom, contactInfo );
 		case 'domain':
-			return getDomainValidationResult( responseCart.products, contactInfo );
+			return getDomainValidationResult( wpcom, responseCart.products, contactInfo );
 		case 'gsuite':
-			return getGSuiteValidationResult( responseCart.products, contactInfo );
+			return getGSuiteValidationResult( wpcom, responseCart.products, contactInfo );
 		default:
 			return isCompleteAndValid( contactInfo )
 				? { success: true }
@@ -112,17 +113,19 @@ async function runContactValidationCheck(
 }
 
 async function runLoggedOutEmailValidationCheck(
+	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails,
 	reduxDispatch: CalypsoDispatch,
 	translate: ReturnType< typeof useTranslate >
 ): Promise< unknown > {
 	const email = contactInfo.email?.value ?? '';
-	return getSignupEmailValidationResult( email, ( newEmail: string ) =>
+	return getSignupEmailValidationResult( wpcom, email, ( newEmail: string ) =>
 		getEmailTakenLoginRedirectMessage( newEmail, reduxDispatch, translate )
 	);
 }
 
 export async function validateContactDetails(
+	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails,
 	isLoggedOutCart: boolean,
 	responseCart: ResponseCart,
@@ -172,6 +175,7 @@ export async function validateContactDetails(
 
 	if ( isLoggedOutCart ) {
 		const loggedOutValidationResult = await runLoggedOutEmailValidationCheck(
+			wpcom,
 			contactInfo,
 			reduxDispatch,
 			translate
@@ -198,7 +202,9 @@ export async function validateContactDetails(
 		}
 	}
 
-	return completeValidationCheck( await runContactValidationCheck( contactInfo, responseCart ) );
+	return completeValidationCheck(
+		await runContactValidationCheck( wpcom, contactInfo, responseCart )
+	);
 }
 
 function isSignupValidationResponse( data: unknown ): data is SignupValidationResponse {
@@ -273,15 +279,18 @@ export const hydrateNestedObject = (
 	return { ...inputObj, [ path ]: childNode };
 };
 
-async function wpcomValidateSignupEmail( {
-	email,
-	is_from_registrationless_checkout,
-}: {
-	email: string;
-	is_from_registrationless_checkout: boolean;
-} ): Promise< SignupValidationResponse > {
+async function wpcomValidateSignupEmail(
+	wp: CheckoutHttpClient,
+	{
+		email,
+		is_from_registrationless_checkout,
+	}: {
+		email: string;
+		is_from_registrationless_checkout: boolean;
+	}
+): Promise< SignupValidationResponse > {
 	return wp.req
-		.post( '/signups/validation/user/', null, {
+		.post( '/signups/validation/user/', undefined, {
 			locale: getLocaleSlug(),
 			email,
 			is_from_registrationless_checkout,
@@ -332,6 +341,7 @@ function convertValidationResponse( rawResponse: unknown ): DomainContactValidat
  * mutation wrapper has nothing to hold.
  */
 async function wpcomValidateTaxContactInformation(
+	wp: CheckoutHttpClient,
 	contactInformation: ContactValidationRequestContactInformation
 ): Promise< DomainContactValidationResponse > {
 	if ( isSharedFoundationEnabled() ) {
@@ -348,6 +358,7 @@ async function wpcomValidateTaxContactInformation(
 }
 
 async function wpcomValidateDomainContactInformation(
+	wp: CheckoutHttpClient,
 	contactInformation: ContactValidationRequestContactInformation,
 	domainNames: string[]
 ): Promise< DomainContactValidationResponse > {
@@ -366,6 +377,7 @@ async function wpcomValidateDomainContactInformation(
 }
 
 async function wpcomValidateGSuiteContactInformation(
+	wp: CheckoutHttpClient,
 	contactInformation: ContactValidationRequestContactInformation,
 	domainNames: string[]
 ): Promise< DomainContactValidationResponse > {
@@ -378,13 +390,15 @@ async function wpcomValidateGSuiteContactInformation(
 }
 
 export async function getTaxValidationResult(
+	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails
 ): Promise< DomainContactValidationResponse > {
 	const formattedContactDetails = prepareContactDetailsForValidation( 'tax', contactInfo );
-	return wpcomValidateTaxContactInformation( formattedContactDetails );
+	return wpcomValidateTaxContactInformation( wpcom, formattedContactDetails );
 }
 
 async function getDomainValidationResult(
+	wpcom: CheckoutHttpClient,
 	products: RequestCartProduct[],
 	contactInfo: ManagedContactDetails
 ): Promise< DomainContactValidationResponse > {
@@ -393,10 +407,11 @@ async function getDomainValidationResult(
 		.filter( ( product ) => ! isDomainMapping( product ) )
 		.map( getDomain );
 	const formattedContactDetails = prepareContactDetailsForValidation( 'domain', contactInfo );
-	return wpcomValidateDomainContactInformation( formattedContactDetails, domainNames );
+	return wpcomValidateDomainContactInformation( wpcom, formattedContactDetails, domainNames );
 }
 
 async function getGSuiteValidationResult(
+	wpcom: CheckoutHttpClient,
 	products: RequestCartProduct[],
 	contactInfo: ManagedContactDetails
 ): Promise< DomainContactValidationResponse > {
@@ -404,7 +419,7 @@ async function getGSuiteValidationResult(
 		.filter( ( item ) => isGSuiteOrGoogleWorkspaceProductSlug( item.product_slug ) )
 		.map( getDomain );
 	const formattedContactDetails = prepareContactDetailsForValidation( 'gsuite', contactInfo );
-	return wpcomValidateGSuiteContactInformation( formattedContactDetails, domainNames );
+	return wpcomValidateGSuiteContactInformation( wpcom, formattedContactDetails, domainNames );
 }
 
 function handleContactValidationResult( {
@@ -452,10 +467,11 @@ function handleContactValidationResult( {
 }
 
 async function getSignupEmailValidationResult(
+	wpcom: CheckoutHttpClient,
 	email: string,
 	emailTakenLoginRedirect: ( email: string ) => TranslateResult
 ) {
-	const response = await wpcomValidateSignupEmail( {
+	const response = await wpcomValidateSignupEmail( wpcom, {
 		email,
 		is_from_registrationless_checkout: true,
 	} );

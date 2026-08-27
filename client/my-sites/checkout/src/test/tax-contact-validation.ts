@@ -52,7 +52,7 @@ describe( 'validating the tax contact details', () => {
 	it( 'goes through the shared mutation with the flag on', async () => {
 		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 
-		await expect( getTaxValidationResult( contactInfo ) ).resolves.toEqual( { success: true } );
+		await expect( getTaxValidationResult( wp, contactInfo ) ).resolves.toEqual( { success: true } );
 
 		expect( mockSharedValidate ).toHaveBeenCalledTimes( 1 );
 		expect( mockLegacyPost ).not.toHaveBeenCalled();
@@ -61,7 +61,7 @@ describe( 'validating the tax contact details', () => {
 	it( 'goes through the older path with the flag off', async () => {
 		mockIsEnabled.mockReturnValue( false );
 
-		await expect( getTaxValidationResult( contactInfo ) ).resolves.toEqual( { success: true } );
+		await expect( getTaxValidationResult( wp, contactInfo ) ).resolves.toEqual( { success: true } );
 
 		expect( mockLegacyPost ).toHaveBeenCalledWith(
 			{ path: '/me/tax-contact-information/validate' },
@@ -79,7 +79,7 @@ describe( 'validating the tax contact details', () => {
 			( flag ) => isFlagOn && flag === 'checkout/shared-foundation'
 		);
 
-		await getTaxValidationResult( contactInfo );
+		await getTaxValidationResult( wp, contactInfo );
 
 		expect( sentContactInformation() ).toMatchObject( {
 			country_code: 'GB',
@@ -103,7 +103,7 @@ describe( 'validating the tax contact details', () => {
 		mockSharedValidate.mockResolvedValue( failure );
 		mockLegacyPost.mockResolvedValue( failure );
 
-		await expect( getTaxValidationResult( contactInfo ) ).resolves.toEqual( {
+		await expect( getTaxValidationResult( wp, contactInfo ) ).resolves.toEqual( {
 			success: false,
 			messages: { contact_information: { postal_code: [ 'Not a valid postcode' ] } },
 			messages_simple: [ 'Not a valid postcode' ],

@@ -5,7 +5,6 @@ import {
 	makeErrorResponse,
 } from '@automattic/composite-checkout';
 import debugFactory from 'debug';
-import { getStripeConfiguration } from 'calypso/lib/store-transactions';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { recordTransactionBeginAnalytics, logStashEvent } from '../lib/analytics';
 import getDomainDetails from './get-domain-details';
@@ -48,6 +47,7 @@ export default async function existingCardProcessor(
 		contactDetails,
 		reduxDispatch,
 		responseCart,
+		getStripeConfiguration,
 	} = dataForProcessor;
 	if ( ! stripe ) {
 		throw new Error( 'Stripe is required to submit an existing card payment' );
