@@ -19,7 +19,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { PayPalLogo } from 'calypso/dashboard/components/paypal-logo';
 import { PaymentMethodLogos } from '../components/payment-method-logos';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
-import { convertErrorToString, logStashEvent } from '../lib/analytics';
+import { useCheckoutLogError } from '../hooks/use-checkout-service-bridge';
+import { convertErrorToString, logStashEvent } from '../lib/error-logging';
 
 const debug = debugFactory( 'calypso:paypal-js' );
 
@@ -81,24 +82,28 @@ function PayPalSubmitButtonWrapper( {
 	onClick?: ProcessPayment;
 } ) {
 	const cartKey = useCheckoutCartKey();
+	const logError = useCheckoutLogError();
 	const { responseCart } = useShoppingCart( cartKey );
 	const fetchConfiguration = useCallback(
 		async () => ( { client_id: ( await fetchPayPalConfiguration() ).client_id } ),
 		[]
 	);
+	const handleError = useCallback(
+		( error: Error ) =>
+			logStashEvent( logError, convertErrorToString( error ), {
+				tags: [ 'paypal-configuration' ],
+			} ),
+		[ logError ]
+	);
 	return (
 		<PayPalProvider
 			currency={ responseCart.currency }
 			fetchPayPalConfiguration={ fetchConfiguration }
-			handleError={ handlePayPalConfigurationError }
+			handleError={ handleError }
 		>
 			<PayPalSubmitButton disabled={ disabled } onClick={ onClick } />
 		</PayPalProvider>
 	);
-}
-
-function handlePayPalConfigurationError( error: Error ) {
-	logStashEvent( convertErrorToString( error ), { tags: [ 'paypal-configuration' ] }, 'error' );
 }
 
 function PayPalSubmitButton( {
@@ -112,6 +117,7 @@ function PayPalSubmitButton( {
 	const togglePaymentMethod = useTogglePaymentMethod();
 	const [ forceReRender, setForceReRender ] = useState< number >( 0 );
 	const cartKey = useCheckoutCartKey();
+	const logError = useCheckoutLogError();
 	const { responseCart } = useShoppingCart( cartKey );
 
 	// Wait for PayPal.js to load before marking this payment method as active.
@@ -138,6 +144,7 @@ function PayPalSubmitButton( {
 				`PayPal says the script is loaded but Buttons are not available. The paypal object is ${ paypalObjectString }`
 			);
 			logStashEvent(
+				logError,
 				'PayPal says the script is loaded but Buttons are not available',
 				{
 					paypal: paypalObjectString,
@@ -146,7 +153,7 @@ function PayPalSubmitButton( {
 				'error'
 			);
 		}
-	}, [ isPayPalJsLoaded, arePayPalButtonsAvailable, togglePaymentMethod ] );
+	}, [ isPayPalJsLoaded, arePayPalButtonsAvailable, logError, togglePaymentMethod ] );
 
 	useEffect( () => {
 		debug( 'cart changed; rerendering PayPalSubmitButton' );

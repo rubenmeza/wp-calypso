@@ -17,6 +17,7 @@ import { getStripeConfiguration } from 'calypso/lib/store-transactions';
 import wpcom from 'calypso/lib/wp';
 import domainManagementReducer from 'calypso/state/domains/management/reducer';
 import noticesReducer from 'calypso/state/notices/reducer';
+import { calypsoCheckoutLogError } from '../../hooks/use-calypso-checkout-log-error';
 import type { PricedAPIPlan, StorePlanSlug } from '@automattic/data-stores';
 import type {
 	CartKey,
@@ -58,6 +59,7 @@ export const processorOptions = {
 	loadPaymentGateway: ( gatewayUrl: string, gatewayNamespace: string ) =>
 		paymentGatewayLoader.ready( gatewayUrl, gatewayNamespace ),
 	recordRecaptchaAction: recordGoogleRecaptchaAction,
+	logError: calypsoCheckoutLogError,
 	includeDomainDetails: false,
 	includeGSuiteDetails: false,
 	createUserAndSiteBeforeTransaction: false,

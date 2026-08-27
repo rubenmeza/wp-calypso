@@ -9,7 +9,8 @@ import { getContactDetailsType } from '@automattic/wpcom-checkout';
 import debugFactory from 'debug';
 import { assignNewCardProcessor } from 'calypso/me/purchases/manage-purchase/payment-method-selector/assignment-processor-functions';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { logStashEvent, recordTransactionBeginAnalytics } from '../lib/analytics';
+import { recordTransactionBeginAnalytics } from '../lib/analytics';
+import { logStashEvent } from '../lib/error-logging';
 import { createEbanxTokenVgs } from './create-ebanx-token-vgs';
 import existingCardProcessor from './existing-card-processor';
 import getDomainDetails from './get-domain-details';
@@ -79,6 +80,7 @@ async function stripeCardProcessor(
 		siteId,
 		contactDetails,
 		reduxDispatch,
+		logError,
 	} = transactionOptions;
 	reduxDispatch(
 		recordTransactionBeginAnalytics( {
@@ -143,6 +145,7 @@ async function stripeCardProcessor(
 				debug( 'transaction requires authentication' );
 				paymentIntentId = stripeResponse.message.payment_intent_id;
 				await handle3DSChallenge(
+					logError,
 					reduxDispatch,
 					submitData.stripe,
 					stripeResponse.message.payment_intent_client_secret,
@@ -170,13 +173,13 @@ async function stripeCardProcessor(
 					error: error.message,
 				} )
 			);
-			logStashEvent( 'calypso_checkout_card_transaction_failed', {
+			logStashEvent( logError, 'calypso_checkout_card_transaction_failed', {
 				payment_intent_id: paymentIntentId ?? '',
 				tags: [ `payment_intent_id:${ paymentIntentId }` ],
 				error: error.message,
 			} );
 
-			handle3DSInFlightError( error, paymentIntentId );
+			handle3DSInFlightError( logError, error, paymentIntentId );
 
 			// Errors here are "expected" errors, meaning that they (hopefully) come
 			// from the endpoint and not from some bug in the frontend code.

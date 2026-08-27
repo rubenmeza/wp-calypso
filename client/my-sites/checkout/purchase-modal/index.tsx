@@ -28,6 +28,7 @@ import { getSelectedSite, getSelectedSiteId } from 'calypso/state/ui/selectors';
 import { useCheckoutRecordRecaptchaAction } from '../src/hooks/use-checkout-analytics-bridge';
 import { useCheckoutCountryList } from '../src/hooks/use-checkout-country-list';
 import {
+	useCheckoutLogError,
 	useCheckoutPaymentGatewayLoader,
 	useCheckoutStripeConfiguration,
 } from '../src/hooks/use-checkout-service-bridge';
@@ -167,11 +168,13 @@ function PurchaseModalWrapper( props: PurchaseModalProps ) {
 	const getStripeConfiguration = useCheckoutStripeConfiguration();
 	const loadPaymentGateway = useCheckoutPaymentGatewayLoader();
 	const recordRecaptchaAction = useCheckoutRecordRecaptchaAction();
+	const logError = useCheckoutLogError();
 	const dataForProcessor: PaymentProcessorOptions = useMemo(
 		() => ( {
 			getStripeConfiguration,
 			loadPaymentGateway,
 			recordRecaptchaAction,
+			logError,
 			createUserAndSiteBeforeTransaction: false,
 			getThankYouUrl: () => '/plans',
 			includeDomainDetails,
@@ -193,6 +196,7 @@ function PurchaseModalWrapper( props: PurchaseModalProps ) {
 			getStripeConfiguration,
 			loadPaymentGateway,
 			recordRecaptchaAction,
+			logError,
 			storedCard,
 			includeDomainDetails,
 			includeGSuiteDetails,

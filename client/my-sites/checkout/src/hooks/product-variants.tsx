@@ -1,4 +1,3 @@
-import config from '@automattic/calypso-config';
 import {
 	getBillingMonthsForTerm,
 	getTermDuration,
@@ -20,9 +19,9 @@ import { isValueTruthy } from '@automattic/wpcom-checkout';
 import debugFactory from 'debug';
 import { useTranslate } from 'i18n-calypso';
 import { useMemo } from 'react';
-import { logToLogstash } from 'calypso/lib/logstash';
 import { useStableCallback } from 'calypso/lib/use-stable-callback';
-import { convertErrorToString } from '../lib/analytics';
+import { convertErrorToString, logStashEvent } from '../lib/error-logging';
+import { useCheckoutLogError } from './use-checkout-service-bridge';
 import type { WPCOMProductVariant } from '../components/item-variation-picker';
 import type { ResponseCartProduct, ResponseCartProductVariant } from '@automattic/shopping-cart';
 
@@ -85,6 +84,7 @@ export function useGetProductVariants(
 ): WPCOMProductVariant[] {
 	const translate = useTranslate();
 	const filterCallbackMemoized = useStableCallback( filterCallback ?? fallbackFilter );
+	const logError = useCheckoutLogError();
 	const variants = product?.product_variants ?? fallbackVariants;
 	const variantProductSlugs = variants.map( ( variant ) => variant.product_slug );
 	debug( 'variantProductSlugs', variantProductSlugs );
@@ -117,24 +117,16 @@ export function useGetProductVariants(
 				} catch ( error ) {
 					// Three-year plans are not yet fully supported, so we need to guard
 					// against fatals here and ignore them.
-					logToLogstash( {
-						feature: 'calypso_client',
-						message: 'checkout variant picker variant error',
-						severity: config( 'env_id' ) === 'production' ? 'error' : 'debug',
-						extra: {
-							env: config( 'env_id' ),
-							variant: JSON.stringify( variant ),
-							message: isError( error )
-								? convertErrorToString( error )
-								: `Unknown error: ${ error }`,
-						},
+					logStashEvent( logError, 'checkout variant picker variant error', {
+						variant: JSON.stringify( variant ),
+						message: isError( error ) ? convertErrorToString( error ) : `Unknown error: ${ error }`,
 					} );
 				}
 			} )
 			.filter( isValueTruthy );
 
 		return convertedVariants.filter( ( product ) => filterCallbackMemoized( product ) );
-	}, [ variants, translate, filterCallbackMemoized ] );
+	}, [ variants, translate, filterCallbackMemoized, logError ] );
 
 	return filteredVariants;
 }

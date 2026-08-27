@@ -1,10 +1,12 @@
 import { confirmStripePaymentIntent } from '@automattic/calypso-stripe';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { logStashEvent } from '../lib/analytics';
+import { logStashEvent } from '../lib/error-logging';
+import type { CheckoutHostContext } from '@automattic/checkout';
 import type { Stripe } from '@stripe/stripe-js';
 import type { CalypsoDispatch } from 'calypso/state/types';
 
 export async function handle3DSChallenge(
+	logError: CheckoutHostContext[ 'logError' ],
 	reduxDispatch: CalypsoDispatch,
 	stripe: Stripe,
 	paymentIntentClientSecret: string,
@@ -17,6 +19,7 @@ export async function handle3DSChallenge(
 		} )
 	);
 	logStashEvent(
+		logError,
 		'calypso_checkout_modal_authorization',
 		{
 			payment_intent_id: paymentIntentId,
@@ -59,13 +62,18 @@ export function doesTransactionResponseRequire3DS(
  *
  * See https://github.com/Automattic/payments-shilling/issues/1910
  */
-export function handle3DSInFlightError( error: Error, paymentIntentId: string | undefined ): void {
+export function handle3DSInFlightError(
+	logError: CheckoutHostContext[ 'logError' ],
+	error: Error,
+	paymentIntentId: string | undefined
+): void {
 	if (
 		error.message &&
 		typeof error.message === 'string' &&
 		error.message.includes( 'You have an in-flight confirmCardPayment' )
 	) {
 		logStashEvent(
+			logError,
 			'calypso_checkout_duplicate_confirm_card_payment',
 			{
 				payment_intent_id: paymentIntentId ?? '',
