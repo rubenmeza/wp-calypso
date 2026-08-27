@@ -1,10 +1,9 @@
 import { useShoppingCart } from '@automattic/shopping-cart';
 import { useCallback, useState, useRef, useEffect } from 'react';
 import { leaveCheckout } from 'calypso/my-sites/checkout/src/lib/leave-checkout';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import { useSelector } from 'calypso/state';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
-import { useCheckoutHostNavigate } from './use-checkout-host-bridge';
+import { useCheckoutHostNavigate, useCheckoutCartKey } from './use-checkout-host-bridge';
 import useValidCheckoutBackUrl from './use-valid-checkout-back-url';
 import type { RemoveProductFromCart, ResponseCart } from '@automattic/shopping-cart';
 
@@ -17,7 +16,7 @@ export default function useRemoveFromCartAndRedirect(
 	removeProductFromCartAndMaybeRedirect: RemoveProductFromCart;
 } {
 	const previousPath = useSelector( getPreviousRoute );
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { removeProductFromCart } = useShoppingCart( cartKey );
 
 	// In some cases, the cloud.jetpack.com/pricing page sends a `checkoutBackUrl` url query param to checkout.

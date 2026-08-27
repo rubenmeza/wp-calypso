@@ -25,9 +25,9 @@ import { useSelector } from 'react-redux';
 import QuerySitePurchases from 'calypso/components/data/query-site-purchases';
 import QueryUserPurchases from 'calypso/components/data/query-user-purchases';
 import Notice from 'calypso/components/notice';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import { getSitePlan, isJetpackMinimumVersion, getSiteOption } from 'calypso/state/sites/selectors';
 import getSelectedSite from 'calypso/state/ui/selectors/get-selected-site';
+import { useCheckoutCartKey } from '../../hooks/use-checkout-host-bridge';
 import JetpackPluginRequiredVersionNotice from './jetpack-plugin-required-version-notice';
 import SitePlanIncludesCartProductNotice from './site-plan-includes-cart-product-notice';
 import type { ResponseCartProduct } from '@automattic/shopping-cart';
@@ -41,7 +41,7 @@ import './style.scss';
 const PrePurchaseNotices = () => {
 	const selectedSite = useSelector( getSelectedSite );
 	const siteId = selectedSite?.ID;
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const cartItemSlugs = responseCart.products.map( ( item ) => item.product_slug );
 
