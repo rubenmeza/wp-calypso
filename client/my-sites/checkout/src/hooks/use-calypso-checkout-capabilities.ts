@@ -32,7 +32,12 @@ export function useCalypsoCheckoutNotices(): CheckoutNotices {
 			( createNotice: NoticeActionCreator ) =>
 			( message: ReactNode, options?: CheckoutNoticeOptions ) => {
 				reduxDispatch(
-					createNotice( message, { id: options?.id, duration: options?.durationMs } )
+					createNotice( message, {
+						id: options?.id,
+						duration: options?.durationMs,
+						ariaLive: options?.ariaLive,
+						role: options?.role,
+					} )
 				);
 			};
 		return {

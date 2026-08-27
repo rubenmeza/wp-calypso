@@ -41,6 +41,13 @@ export interface CheckoutNoticeOptions {
 	id?: string;
 	/** Dismiss the notice automatically after this many milliseconds. */
 	durationMs?: number;
+	/**
+	 * How urgently a screen reader should announce the notice. ARIA rather than
+	 * a host-specific idea of urgency, because every host renders to a DOM.
+	 */
+	ariaLive?: 'off' | 'polite' | 'assertive';
+	/** The ARIA role to render the notice under, `alert` being the usual one. */
+	role?: string;
 }
 
 export interface CheckoutNotices {
