@@ -1,7 +1,9 @@
+import { createUserAccount } from '@automattic/api-core';
 import config from '@automattic/calypso-config';
 import i18n from 'i18n-calypso';
 import { getLocaleSlug } from 'calypso/lib/i18n-utils';
 import getToSAcceptancePayload from 'calypso/lib/tos-acceptance-tracking';
+import wp from 'calypso/lib/wp';
 import { stringifyBody } from 'calypso/state/login/utils';
 import type { PaymentProcessorOptions } from './types/payment-processors';
 
@@ -21,16 +23,15 @@ function isCreateAccountResponse( response: unknown ): response is CreateAccount
 	return true;
 }
 
-/**
- * What creating an account needs from the host: a REST client to register
- * through and to hold the resulting token, and the reCAPTCHA transport.
- */
-type AccountCreationServices = Pick< PaymentProcessorOptions, 'wpcom' | 'recordRecaptchaAction' >;
+/** What creating an account needs from the host: the reCAPTCHA transport. */
+type AccountCreationServices = Pick< PaymentProcessorOptions, 'recordRecaptchaAction' >;
 
-async function createAccountCallback(
-	response: CreateAccountResponse,
-	wp: AccountCreationServices[ 'wpcom' ]
-): Promise< void > {
+/**
+ * Logging the new shopper in is Calypso's own business, not an API call: the
+ * bearer token is loaded into the client every later request goes through, the
+ * way the signup flows do it.
+ */
+async function createAccountCallback( response: CreateAccountResponse ): Promise< void > {
 	if ( ! response.bearer_token ) {
 		return;
 	}
@@ -57,7 +58,6 @@ export async function createAccount( {
 	email,
 	siteId,
 	recaptchaClientId,
-	wpcom: wp,
 	recordRecaptchaAction,
 }: {
 	signupFlowName: string;
@@ -90,7 +90,7 @@ export async function createAccount( {
 	const blogName = newSiteParams?.blog_name;
 
 	try {
-		const response = await wp.req.post( '/users/new', {
+		const response = await createUserAccount( {
 			email,
 			'g-recaptcha-error': recaptchaError,
 			'g-recaptcha-response': recaptchaToken || undefined,
@@ -110,7 +110,7 @@ export async function createAccount( {
 			throw new Error( 'Failed to create account' );
 		}
 
-		createAccountCallback( response, wp );
+		createAccountCallback( response );
 		return response;
 	} catch ( error ) {
 		const errorMessage = ( error as Error )?.message
