@@ -1,6 +1,5 @@
 import { isCreditCard, type StoredPaymentMethod } from '@automattic/wpcom-checkout';
 import { UseQueryResult, useQuery } from '@tanstack/react-query';
-import { useCheckoutWpcom } from '../src/hooks/use-checkout-service-bridge';
 import { useCheckoutStoredPaymentMethods } from '../src/hooks/use-checkout-stored-payment-methods';
 import {
 	getTaxValidationResult,
@@ -17,10 +16,9 @@ const useIsContactInfoValid = (
 	paymentMethods: StoredPaymentMethod[]
 ): UseQueryResult< boolean | null > => {
 	const storedCard = paymentMethods.length > 0 ? paymentMethods[ 0 ] : undefined;
-	const wpcom = useCheckoutWpcom();
 
 	const validateContactDetails = async () => {
-		const validationResult = await getTaxValidationResult( wpcom, {
+		const validationResult = await getTaxValidationResult( {
 			state: wrapValueInManagedValue( storedCard?.tax_location?.subdivision_code ),
 			city: wrapValueInManagedValue( storedCard?.tax_location?.city ),
 			postalCode: wrapValueInManagedValue( storedCard?.tax_location?.postal_code ),

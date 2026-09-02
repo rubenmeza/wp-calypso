@@ -4,16 +4,17 @@
  * that uses VGS tokens for secure card data handling
  */
 
+import { fetchEbanxConfiguration, tokenizeEbanxCard } from '@automattic/api-core';
 import debugFactory from 'debug';
 import type { PaymentProcessorOptions } from '../types/payment-processors';
 
 const debug = debugFactory( 'calypso:ebanx-vgs-tokenization' );
 
 /**
- * What tokenizing an EBANX card needs from the host: a REST client, and the
- * loader for EBANX's own SDK, which supplies the device fingerprint.
+ * What tokenizing an EBANX card needs from the host: the loader for EBANX's own
+ * SDK, which supplies the device fingerprint.
  */
-type EbanxGateway = Pick< PaymentProcessorOptions, 'wpcom' | 'loadPaymentGateway' >;
+type EbanxGateway = Pick< PaymentProcessorOptions, 'loadPaymentGateway' >;
 
 /**
  * VGS token data structure
@@ -37,15 +38,6 @@ interface EbanxTokenizeRequest {
 	payment_type_code: string; // e.g., 'new_purchase', 'add_card', etc.
 	country: string; // ISO country code (e.g., 'BR', 'MX')
 	test_mode?: boolean; // Optional test mode flag
-}
-
-/**
- * What `/transact/vgs/wpcom/ebanx/tokenize` answers with.
- */
-interface EbanxTokenizeApiResponse {
-	token: string;
-	payment_type_code?: string;
-	status?: string;
 }
 
 /**
@@ -101,14 +93,12 @@ interface EbanxSdk {
 async function getEbanxDeviceFingerprint(
 	country: string,
 	requestType: string,
-	{ wpcom, loadPaymentGateway }: EbanxGateway
+	{ loadPaymentGateway }: EbanxGateway
 ): Promise< string | undefined > {
 	try {
 		debug( 'fetching ebanx configuration for device fingerprint' );
 
-		const configuration: EbanxConfiguration = await wpcom.req.get( '/me/ebanx-configuration', {
-			request_type: requestType,
-		} );
+		const configuration: EbanxConfiguration = await fetchEbanxConfiguration( requestType );
 
 		debug( 'loading ebanx sdk for device fingerprint' );
 		const ebanx = ( await loadPaymentGateway( configuration.js_url, 'EBANX' ) ) as EbanxSdk;
@@ -155,7 +145,6 @@ export async function createEbanxTokenVgs(
 	cardDetails: EbanxCardDetails,
 	gateway: EbanxGateway
 ): Promise< EbanxTokenizeResponse > {
-	const { wpcom } = gateway;
 	debug( 'creating ebanx token with vgs tokens', { requestType, country: cardDetails.country } );
 
 	try {
@@ -175,11 +164,7 @@ export async function createEbanxTokenVgs(
 		} );
 
 		// Call the backend endpoint to tokenize with EBANX
-		const apiResponse = await wpcom.req.post< EbanxTokenizeApiResponse >( {
-			path: '/transact/vgs/wpcom/ebanx/tokenize',
-			apiNamespace: 'wpcom/v2',
-			body: requestPayload,
-		} );
+		const apiResponse = await tokenizeEbanxCard( requestPayload );
 
 		debug( 'ebanx tokenization successful', {
 			hasToken: !! apiResponse.token,

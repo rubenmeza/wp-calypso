@@ -1,4 +1,9 @@
-import { validateTaxContactInformation } from '@automattic/api-core';
+import {
+	validateDomainContactInformation,
+	validateGSuiteContactInformation,
+	validateSignupUser,
+	validateTaxContactInformation,
+} from '@automattic/api-core';
 import {
 	getDomain,
 	isDomainTransfer,
@@ -20,8 +25,6 @@ import {
 	formatDomainContactValidationResponse,
 	getSignupValidationErrorResponse,
 } from '../types/wpcom-store-state';
-import { isSharedFoundationEnabled } from './shared-foundation';
-import type { CheckoutHttpClient } from '@automattic/checkout';
 import type { RequestCartProduct, ResponseCart } from '@automattic/shopping-cart';
 import type {
 	ManagedContactDetails,
@@ -91,7 +94,6 @@ const getEmailTakenLoginRedirectMessage = (
 };
 
 async function runContactValidationCheck(
-	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails,
 	responseCart: ResponseCart
 ): Promise< DomainContactValidationResponse > {
@@ -100,11 +102,11 @@ async function runContactValidationCheck(
 
 	switch ( contactDetailsType ) {
 		case 'tax':
-			return getTaxValidationResult( wpcom, contactInfo );
+			return getTaxValidationResult( contactInfo );
 		case 'domain':
-			return getDomainValidationResult( wpcom, responseCart.products, contactInfo );
+			return getDomainValidationResult( responseCart.products, contactInfo );
 		case 'gsuite':
-			return getGSuiteValidationResult( wpcom, responseCart.products, contactInfo );
+			return getGSuiteValidationResult( responseCart.products, contactInfo );
 		default:
 			return isCompleteAndValid( contactInfo )
 				? { success: true }
@@ -113,19 +115,17 @@ async function runContactValidationCheck(
 }
 
 async function runLoggedOutEmailValidationCheck(
-	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails,
 	reduxDispatch: CalypsoDispatch,
 	translate: ReturnType< typeof useTranslate >
 ): Promise< unknown > {
 	const email = contactInfo.email?.value ?? '';
-	return getSignupEmailValidationResult( wpcom, email, ( newEmail: string ) =>
+	return getSignupEmailValidationResult( email, ( newEmail: string ) =>
 		getEmailTakenLoginRedirectMessage( newEmail, reduxDispatch, translate )
 	);
 }
 
 export async function validateContactDetails(
-	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails,
 	isLoggedOutCart: boolean,
 	responseCart: ResponseCart,
@@ -175,7 +175,6 @@ export async function validateContactDetails(
 
 	if ( isLoggedOutCart ) {
 		const loggedOutValidationResult = await runLoggedOutEmailValidationCheck(
-			wpcom,
 			contactInfo,
 			reduxDispatch,
 			translate
@@ -202,9 +201,7 @@ export async function validateContactDetails(
 		}
 	}
 
-	return completeValidationCheck(
-		await runContactValidationCheck( wpcom, contactInfo, responseCart )
-	);
+	return completeValidationCheck( await runContactValidationCheck( contactInfo, responseCart ) );
 }
 
 function isSignupValidationResponse( data: unknown ): data is SignupValidationResponse {
@@ -279,28 +276,23 @@ export const hydrateNestedObject = (
 	return { ...inputObj, [ path ]: childNode };
 };
 
-async function wpcomValidateSignupEmail(
-	wp: CheckoutHttpClient,
-	{
+async function wpcomValidateSignupEmail( {
+	email,
+	is_from_registrationless_checkout,
+}: {
+	email: string;
+	is_from_registrationless_checkout: boolean;
+} ): Promise< SignupValidationResponse > {
+	return validateSignupUser( {
+		locale: getLocaleSlug(),
 		email,
 		is_from_registrationless_checkout,
-	}: {
-		email: string;
-		is_from_registrationless_checkout: boolean;
-	}
-): Promise< SignupValidationResponse > {
-	return wp.req
-		.post( '/signups/validation/user/', undefined, {
-			locale: getLocaleSlug(),
-			email,
-			is_from_registrationless_checkout,
-		} )
-		.then( ( data: unknown ) => {
-			if ( ! isSignupValidationResponse( data ) ) {
-				throw new Error( 'Signup validation returned unknown response.' );
-			}
-			return data;
-		} );
+	} ).then( ( data: unknown ) => {
+		if ( ! isSignupValidationResponse( data ) ) {
+			throw new Error( 'Signup validation returned unknown response.' );
+		}
+		return data;
+	} );
 }
 
 function convertValidationMessages(
@@ -341,64 +333,39 @@ function convertValidationResponse( rawResponse: unknown ): DomainContactValidat
  * mutation wrapper has nothing to hold.
  */
 async function wpcomValidateTaxContactInformation(
-	wp: CheckoutHttpClient,
 	contactInformation: ContactValidationRequestContactInformation
 ): Promise< DomainContactValidationResponse > {
-	if ( isSharedFoundationEnabled() ) {
-		return convertValidationResponse(
-			await validateTaxContactInformation( { contact_information: contactInformation } )
-		);
-	}
-
-	return wp.req
-		.post( { path: '/me/tax-contact-information/validate' }, undefined, {
-			contact_information: contactInformation,
-		} )
-		.then( convertValidationResponse );
+	return convertValidationResponse(
+		await validateTaxContactInformation( { contact_information: contactInformation } )
+	);
 }
 
 async function wpcomValidateDomainContactInformation(
-	wp: CheckoutHttpClient,
 	contactInformation: ContactValidationRequestContactInformation,
 	domainNames: string[]
 ): Promise< DomainContactValidationResponse > {
-	return wp.req
-		.post(
-			{ path: '/me/domain-contact-information/validate' },
-			{
-				apiVersion: '1.2',
-			},
-			{
-				contact_information: contactInformation,
-				domain_names: domainNames,
-			}
-		)
-		.then( convertValidationResponse );
+	return validateDomainContactInformation( contactInformation, domainNames ).then(
+		convertValidationResponse
+	);
 }
 
 async function wpcomValidateGSuiteContactInformation(
-	wp: CheckoutHttpClient,
 	contactInformation: ContactValidationRequestContactInformation,
 	domainNames: string[]
 ): Promise< DomainContactValidationResponse > {
-	return wp.req
-		.post( { path: '/me/google-apps/validate' }, undefined, {
-			contact_information: contactInformation,
-			domain_names: domainNames,
-		} )
-		.then( convertValidationResponse );
+	return validateGSuiteContactInformation( contactInformation, domainNames ).then(
+		convertValidationResponse
+	);
 }
 
 export async function getTaxValidationResult(
-	wpcom: CheckoutHttpClient,
 	contactInfo: ManagedContactDetails
 ): Promise< DomainContactValidationResponse > {
 	const formattedContactDetails = prepareContactDetailsForValidation( 'tax', contactInfo );
-	return wpcomValidateTaxContactInformation( wpcom, formattedContactDetails );
+	return wpcomValidateTaxContactInformation( formattedContactDetails );
 }
 
 async function getDomainValidationResult(
-	wpcom: CheckoutHttpClient,
 	products: RequestCartProduct[],
 	contactInfo: ManagedContactDetails
 ): Promise< DomainContactValidationResponse > {
@@ -407,11 +374,10 @@ async function getDomainValidationResult(
 		.filter( ( product ) => ! isDomainMapping( product ) )
 		.map( getDomain );
 	const formattedContactDetails = prepareContactDetailsForValidation( 'domain', contactInfo );
-	return wpcomValidateDomainContactInformation( wpcom, formattedContactDetails, domainNames );
+	return wpcomValidateDomainContactInformation( formattedContactDetails, domainNames );
 }
 
 async function getGSuiteValidationResult(
-	wpcom: CheckoutHttpClient,
 	products: RequestCartProduct[],
 	contactInfo: ManagedContactDetails
 ): Promise< DomainContactValidationResponse > {
@@ -419,7 +385,7 @@ async function getGSuiteValidationResult(
 		.filter( ( item ) => isGSuiteOrGoogleWorkspaceProductSlug( item.product_slug ) )
 		.map( getDomain );
 	const formattedContactDetails = prepareContactDetailsForValidation( 'gsuite', contactInfo );
-	return wpcomValidateGSuiteContactInformation( wpcom, formattedContactDetails, domainNames );
+	return wpcomValidateGSuiteContactInformation( formattedContactDetails, domainNames );
 }
 
 function handleContactValidationResult( {
@@ -467,11 +433,10 @@ function handleContactValidationResult( {
 }
 
 async function getSignupEmailValidationResult(
-	wpcom: CheckoutHttpClient,
 	email: string,
 	emailTakenLoginRedirect: ( email: string ) => TranslateResult
 ) {
-	const response = await wpcomValidateSignupEmail( wpcom, {
+	const response = await wpcomValidateSignupEmail( {
 		email,
 		is_from_registrationless_checkout: true,
 	} );
