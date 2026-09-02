@@ -1,7 +1,6 @@
 import type { StripeConfiguration } from '@automattic/calypso-stripe';
 import type { CartKey, MinimalRequestCartProduct, ResponseCart } from '@automattic/shopping-cart';
 import type { ReactNode } from 'react';
-import type { WPCOM } from 'wpcom';
 
 /**
  * The receipt for a completed order, in the terms the shared checkout speaks.
@@ -89,8 +88,6 @@ export interface CheckoutHostContext {
 	notices: CheckoutNotices;
 	urlParams: URLSearchParams;
 
-	/** The authenticated WordPress.com REST client. */
-	wpcom: WPCOM;
 	/** Where faults go. */
 	logError: ( entry: CheckoutErrorLog ) => void;
 

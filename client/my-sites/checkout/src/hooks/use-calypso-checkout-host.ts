@@ -6,7 +6,6 @@ import { recordPurchase } from 'calypso/lib/analytics/record-purchase';
 import { navigate } from 'calypso/lib/navigate';
 import paymentGatewayLoader from 'calypso/lib/payment-gateway-loader';
 import { getStripeConfiguration } from 'calypso/lib/store-transactions';
-import wpcom from 'calypso/lib/wp';
 import { useSelector } from 'calypso/state';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
 import useCartKey from '../../use-cart-key';
@@ -73,7 +72,6 @@ export default function useCalypsoCheckoutHost( {
 			onComplete,
 			notices,
 			urlParams,
-			wpcom,
 			logError,
 			recordEvent,
 			// `gaRecordEvent` comes from an untyped module as a bare `Function`.
