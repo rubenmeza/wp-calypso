@@ -1,7 +1,7 @@
+import { fetchDomainContactInformation, setDomainContactInformation } from '@automattic/api-core';
 import { domainContactInformationQuery } from '@automattic/api-queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import debugFactory from 'debug';
-import wpcom from 'calypso/lib/wp';
 import type { DomainContactInformation } from '@automattic/api-core';
 import type {
 	DomainContactValidationRequest,
@@ -13,9 +13,7 @@ const debug = debugFactory( 'calypso:user-cached-contact-details' );
 
 async function fetchCachedContactDetails(): Promise< PossiblyCompleteDomainContactDetails > {
 	try {
-		const rawData: DomainContactInformation = await wpcom.req.get(
-			'/me/domain-contact-information'
-		);
+		const rawData: DomainContactInformation = await fetchDomainContactInformation();
 		debug( 'fetched cached contact details', rawData );
 		return convertSnakeCaseContactDetailsToCamelCase( rawData );
 	} catch ( error ) {
@@ -25,7 +23,9 @@ async function fetchCachedContactDetails(): Promise< PossiblyCompleteDomainConta
 
 async function setCachedContactDetails( rawData: DomainContactValidationRequest ): Promise< void > {
 	debug( 'updating cached contact details to', rawData );
-	wpcom.req.post( '/me/domain-contact-information', rawData );
+	// Deliberately not awaited, as this has always been: the caller invalidates
+	// its caches without waiting for the save to land.
+	setDomainContactInformation( rawData.contact_information );
 }
 
 export function convertSnakeCaseContactDetailsToCamelCase(

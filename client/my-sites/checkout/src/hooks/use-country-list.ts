@@ -1,5 +1,5 @@
+import { fetchTransactionsSupportedCountries } from '@automattic/api-core';
 import { useQuery } from '@tanstack/react-query';
-import wpcom from 'calypso/lib/wp';
 import type { CountryListItem, CountryListItemWithVat } from '@automattic/wpcom-checkout';
 
 const emptyList: CountryListItem[] = [];
@@ -8,18 +8,6 @@ export const isVatSupported = ( country: CountryListItem ): country is CountryLi
 	country.vat_supported;
 
 const getCountryListQueryKey = ( locale?: string ) => [ 'checkout-country-list', locale ?? '' ];
-
-async function fetchCountryListForCheckout( locale?: string ): Promise< CountryListItem[] > {
-	const query = locale ? { locale } : undefined;
-
-	return await wpcom.req.get(
-		{
-			path: '/me/transactions/supported-countries',
-			apiVersion: '1.1',
-		},
-		query
-	);
-}
 
 export default function useCountryList(
 	locale?: string,
@@ -35,7 +23,7 @@ export default function useCountryList(
 ): CountryListItem[] {
 	const result = useQuery( {
 		queryKey: getCountryListQueryKey( locale ),
-		queryFn: () => fetchCountryListForCheckout( locale ),
+		queryFn: () => fetchTransactionsSupportedCountries( locale ),
 		enabled,
 		meta: {
 			persist: false,

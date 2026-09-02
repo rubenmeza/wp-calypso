@@ -1,26 +1,13 @@
+import { fetchUserPaymentMethods, requestPaymentMethodDeletion } from '@automattic/api-core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslate } from 'i18n-calypso';
 import { useCallback } from 'react';
-import wp from 'calypso/lib/wp';
 import type { StoredPaymentMethod } from '@automattic/wpcom-checkout';
 import type { ComponentType } from 'react';
 
 export const storedPaymentMethodsQueryKey = 'use-stored-payment-methods';
 
 export type PaymentMethodRequestType = 'card' | 'agreement' | 'vault-token' | 'all';
-
-const fetchPaymentMethods = (
-	type: PaymentMethodRequestType,
-	expired: boolean
-): StoredPaymentMethod[] =>
-	wp.req.get( '/me/payment-methods', {
-		type,
-		expired: expired ? 'include' : 'exclude',
-		apiVersion: '1.2',
-	} );
-
-const requestPaymentMethodDeletion = ( id: StoredPaymentMethod[ 'stored_details_id' ] ) =>
-	wp.req.post( { path: '/me/stored-cards/' + id + '/delete' } );
 
 /**
  * What a card-list response means, shared by both reads so they cannot drift:
@@ -144,7 +131,7 @@ export function useStoredPaymentMethods( {
 
 	const { data, isLoading, error } = useQuery< StoredPaymentMethod[], Error >( {
 		queryKey,
-		queryFn: () => fetchPaymentMethods( type, expired ),
+		queryFn: () => fetchUserPaymentMethods( type, expired ),
 		enabled: enabled && ! isLoggedOut,
 		// Saved payment details stay in memory, never in localStorage.
 		meta: { persist: false },
