@@ -1,9 +1,9 @@
 import { localizeUrl } from '@automattic/i18n-utils';
 import { useTranslate } from 'i18n-calypso';
 import isAkismetCheckout from 'calypso/lib/akismet/is-akismet-checkout';
-import { gaRecordEvent } from 'calypso/lib/analytics/ga';
 import TosText from 'calypso/me/purchases/manage-purchase/payment-method-selector/tos-text';
 import CheckoutTermsItem from 'calypso/my-sites/checkout/src/components/checkout-terms-item';
+import { useCheckoutRecordGaEvent } from '../hooks/use-checkout-analytics-bridge';
 
 export const TermsOfService = ( {
 	hasRenewableSubscription,
@@ -17,8 +17,9 @@ export const TermsOfService = ( {
 	is100YearDomainPurchase: boolean;
 } ) => {
 	const translate = useTranslate();
+	const recordGaEvent = useCheckoutRecordGaEvent();
 	const recordTermsAndConditionsClick = () => {
-		gaRecordEvent( 'Upgrades', 'Clicked Terms and Conditions Link' );
+		recordGaEvent( 'Upgrades', 'Clicked Terms and Conditions Link' );
 	};
 
 	const renderTerms = () => {

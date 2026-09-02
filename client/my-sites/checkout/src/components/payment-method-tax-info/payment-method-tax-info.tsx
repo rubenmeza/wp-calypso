@@ -8,7 +8,7 @@ import Notice from 'calypso/components/notice';
 import TaxFields from 'calypso/my-sites/checkout/src/components/tax-fields';
 import { useCheckoutCountryList } from 'calypso/my-sites/checkout/src/hooks/use-checkout-country-list';
 import { usePaymentMethodTaxInfo } from './use-payment-method-tax-info';
-import type { TaxInfo, TaxGetInfo } from './types';
+import type { TaxGetInfo } from './types';
 import type { ManagedContactDetails } from '@automattic/wpcom-checkout';
 import type { FunctionComponent, ReactNode } from 'react';
 
@@ -102,7 +102,7 @@ function joinNonEmptyValues( joinString: string, ...values: ( string | undefined
 	return values.filter( ( value ) => value && value?.length > 0 ).join( joinString );
 }
 
-function contactDetailsToTaxInfo( info?: TaxInfo ): ManagedContactDetails {
+function contactDetailsToTaxInfo( info?: TaxGetInfo ): ManagedContactDetails {
 	const taxInfo: ManagedContactDetails = {
 		countryCode: {
 			value: info?.tax_country_code ?? '',

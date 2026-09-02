@@ -58,6 +58,7 @@ jest.mock( '@vgs/collect-js-react', () => ( {
 	useVGSCollectFormInstance: jest.fn(),
 } ) );
 jest.mock( '@wordpress/i18n', () => ( {
+	...jest.requireActual( '@wordpress/i18n' ),
 	__: ( text: string ) => text,
 } ) );
 

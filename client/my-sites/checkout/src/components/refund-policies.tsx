@@ -15,8 +15,8 @@ import { formatCurrency } from '@automattic/number-formatters';
 import { DOMAIN_CANCEL, REFUNDS } from '@automattic/urls';
 import { isWpComProductRenewal as isRenewal, isValueTruthy } from '@automattic/wpcom-checkout';
 import { useTranslate, type TranslateResult } from 'i18n-calypso';
-import { gaRecordEvent } from 'calypso/lib/analytics/ga';
 import { has100YearPlan, has100YearDomain } from 'calypso/lib/cart-values/cart-items';
+import { useCheckoutRecordGaEvent } from '../hooks/use-checkout-analytics-bridge';
 import CheckoutTermsItem from './checkout-terms-item';
 import type { ResponseCart } from '@automattic/shopping-cart';
 
@@ -345,13 +345,14 @@ function RefundPolicyItem( {
 	cart: ResponseCart;
 } ) {
 	const translate = useTranslate();
+	const recordGaEvent = useCheckoutRecordGaEvent();
 
 	const refundsSupportPage = (
 		<a
 			href={ localizeUrl( REFUNDS ) }
 			target="_blank"
 			rel="noopener noreferrer"
-			onClick={ () => gaRecordEvent( 'Upgrades', 'Clicked Refund Support Link' ) }
+			onClick={ () => recordGaEvent( 'Upgrades', 'Clicked Refund Support Link' ) }
 		/>
 	);
 	const cancelDomainSupportPage = (
@@ -359,7 +360,7 @@ function RefundPolicyItem( {
 			href={ localizeUrl( DOMAIN_CANCEL ) }
 			target="_blank"
 			rel="noopener noreferrer"
-			onClick={ () => gaRecordEvent( 'Upgrades', 'Clicked Cancel Domain Support Link' ) }
+			onClick={ () => recordGaEvent( 'Upgrades', 'Clicked Cancel Domain Support Link' ) }
 		/>
 	);
 

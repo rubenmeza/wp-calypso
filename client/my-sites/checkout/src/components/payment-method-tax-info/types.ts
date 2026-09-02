@@ -7,6 +7,9 @@ export interface TaxInfo {
 	tax_address?: string;
 }
 
-export interface TaxGetInfo extends TaxInfo {
-	is_tax_info_set: boolean;
-}
+/**
+ * What reading a tax location back gives you. Every field is optional, unlike
+ * `TaxInfo`: a method with no tax location set answers with `is_tax_info_set`
+ * alone.
+ */
+export type { StoredPaymentMethodTaxInfo as TaxGetInfo } from '@automattic/api-core';

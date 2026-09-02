@@ -1,6 +1,6 @@
+import { fetchOrderTransaction } from '@automattic/api-core';
 import { useQuery } from '@tanstack/react-query';
 import { useDebugValue } from 'react';
-import wp from 'calypso/lib/wp';
 import {
 	ERROR,
 	PROCESSING,
@@ -18,9 +18,7 @@ export async function fetchPurchaseOrder(
 	if ( ! orderId ) {
 		return undefined;
 	}
-	return wp.req.get( `/me/transactions/order/${ orderId }`, {
-		apiVersion: '1.1',
-	} );
+	return fetchOrderTransaction( orderId );
 }
 
 /** The same payload the shared order query reads; this hook keeps the older shape. */
@@ -135,7 +133,6 @@ export default function usePurchaseOrder(
 } {
 	const shouldFetch = Boolean( orderId );
 	const queryKey = [ 'purchase-order', orderId ];
-
 	const { data: order, isLoading } = useQuery< OrderTransaction | undefined, Error >( {
 		queryKey,
 		queryFn: async () => {
