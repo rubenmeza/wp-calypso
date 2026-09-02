@@ -1,3 +1,14 @@
-export * from './checkout-store';
-export * from './checkout-store-provider';
-export * from './contact-details';
+export { createCheckoutStore } from './checkout-store';
+export { CheckoutStoreProvider } from './checkout-store-provider';
+export {
+	convertDomainContactDetailsToManagedContactDetails,
+	formatDomainContactValidationResponse,
+	getSignupValidationErrorResponse,
+	isCompleteAndValid,
+	isValid,
+	prepareDomainContactDetails,
+	prepareDomainContactDetailsErrors,
+	prepareDomainContactDetailsForTransaction,
+	prepareDomainContactValidationRequest,
+	prepareGSuiteContactValidationRequest,
+} from './contact-details';

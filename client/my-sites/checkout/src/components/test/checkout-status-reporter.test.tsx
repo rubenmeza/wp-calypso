@@ -12,12 +12,9 @@ import { render, screen } from '@testing-library/react';
 import { CheckoutStatusReporter } from '../checkout-status-reporter';
 
 // Only the two status hooks, spelled out: pulling in the real module here
-// crashes on its own circular imports. `Button` is stubbed because
-// `@automattic/wpcom-checkout` styles it at module scope, and it is reached
-// through the shared package's barrel.
+// crashes on its own circular imports.
 jest.mock( '@automattic/composite-checkout', () => ( {
 	__esModule: true,
-	Button: () => null,
 	FormStatus: {
 		LOADING: 'loading',
 		READY: 'ready',

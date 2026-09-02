@@ -1,4 +1,6 @@
-import { tryToGuessPostalCodeFormat } from '@automattic/wpcom-checkout';
+// Not the barrel: it styles a `Button` at module scope, which drags
+// `composite-checkout` into everything that touches this model, tests included.
+import { tryToGuessPostalCodeFormat } from '@automattic/wpcom-checkout/src/postal-code';
 import type {
 	DomainContactDetails,
 	CaDomainContactExtraDetails,

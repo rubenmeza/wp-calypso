@@ -15,16 +15,17 @@ import type { ReactNode } from 'react';
  * resolves as it did; only the checkout's own store is shadowed. Anything that
  * writes into that store has to render inside this.
  *
- * `createRegistry` subscribes to its parent and `@wordpress/data` offers no way
- * to undo that, so each checkout opened leaves a listener behind for the life of
- * the page. Worth revisiting when a host can open and close checkouts
- * repeatedly.
+ * A mounted one cannot be torn down: each checkout opened leaves a listener
+ * behind for the life of the page.
  */
 export function CheckoutStoreProvider( { children }: { children: ReactNode } ) {
 	const parentRegistry = useRegistry();
 
 	// `useState` rather than `useMemo`, which React is free to throw away: a
 	// registry thrown away mid-checkout would take the shopper's typing with it.
+	//
+	// `createRegistry` subscribes to its parent and `@wordpress/data` offers no
+	// way to undo that, which is why the listener outlives the checkout.
 	const [ scopedRegistry ] = useState( () => {
 		const registry = createRegistry( {}, parentRegistry );
 		registry.register( createCheckoutStore() );

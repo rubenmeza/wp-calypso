@@ -5,25 +5,18 @@
  *
  * Named rather than `export *`: the package's barrel also carries the host
  * context, the order polling and the status seam, and nothing importing this
- * path wants those.
+ * path wants those. The list is what the app actually imports — anything the
+ * model needs only for itself stays inside the package.
  */
 export {
 	convertDomainContactDetailsToManagedContactDetails,
-	convertManagedContactDetailsToDomainContactDetails,
-	emptyManagedContactDetails,
-	flattenManagedContactDetailsShape,
 	formatDomainContactValidationResponse,
-	getInitialWpcomStoreState,
 	getSignupValidationErrorResponse,
 	isCompleteAndValid,
-	isTouched,
 	isValid,
-	managedContactDetailsUpdaters,
-	mapManagedContactDetailsShape,
 	prepareDomainContactDetails,
 	prepareDomainContactDetailsErrors,
 	prepareDomainContactDetailsForTransaction,
 	prepareDomainContactValidationRequest,
 	prepareGSuiteContactValidationRequest,
-	updateManagedContactDetailsShape,
 } from '@automattic/checkout';

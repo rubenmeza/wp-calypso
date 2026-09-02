@@ -72,6 +72,18 @@ describe( 'the store a checkout uses', () => {
 		expect( screen.getByTestId( 'second' ) ).toHaveTextContent( '' );
 	} );
 
+	it( 'stays the same store when the flag changes under a live checkout', () => {
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
+
+		const { rerender } = render( openCheckout( 'first', 'first@example.com' ) );
+		typeInto( 'first' );
+
+		mockIsEnabled.mockReturnValue( false );
+		rerender( openCheckout( 'first', 'first@example.com' ) );
+
+		expect( screen.getByTestId( 'first' ) ).toHaveTextContent( 'first@example.com' );
+	} );
+
 	it( 'is the one the app registered, with the flag off', () => {
 		mockIsEnabled.mockReturnValue( false );
 

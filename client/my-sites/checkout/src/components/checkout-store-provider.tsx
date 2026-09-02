@@ -1,4 +1,5 @@
 import { CheckoutStoreProvider as PackagedCheckoutStoreProvider } from '@automattic/checkout';
+import { useState } from 'react';
 import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import type { ReactNode } from 'react';
 
@@ -16,7 +17,11 @@ import type { ReactNode } from 'react';
  * do not mount it at all.
  */
 export function CheckoutStoreProvider( { children }: { children: ReactNode } ) {
-	if ( ! isSharedFoundationEnabled() ) {
+	// Read once and held: a checkout that changed which store it was using
+	// halfway through would take the shopper's typing with it.
+	const [ isPackaged ] = useState( isSharedFoundationEnabled );
+
+	if ( ! isPackaged ) {
 		return children;
 	}
 
