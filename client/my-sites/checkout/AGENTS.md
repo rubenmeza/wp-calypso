@@ -17,7 +17,8 @@ client/my-sites/checkout/
 │   ├── payment-methods/               # One UI component per processor
 │   ├── hooks/use-create-payment-methods/  # Generates PaymentMethod[] from cart + server config
 │   └── lib/
-│       ├── wpcom-store.ts               # @wordpress/data store (not Redux — checkout-specific state)
+│       ├── wpcom-store.ts               # registers the one global @wordpress/data store
+│       │                                #   (the model and factory live in @automattic/checkout)
 │       ├── leave-checkout.ts            # navigate() trap — see pitfall #6
 │       └── *-processor.ts              # One per payment method (13 files)
 ├── get-thank-you-page-url/          # 800+ lines, exhaustive tests — see pitfall #5
@@ -42,8 +43,10 @@ The sidebar/summary view is NOT a step — visibility is manually managed via
 ### Checkout State
 
 - **Redux** — global state (site, user, notices)
-- **`@wordpress/data` store** (`wpcom-store.ts`) — checkout-specific: contact details, VAT,
-  domain validation results, form touched fields. On the shared foundation
+- **`@wordpress/data` store** — checkout-specific: contact details, VAT, domain validation
+  results, form touched fields. The model, the store factory and the per-instance provider live
+  in `@automattic/checkout`; `lib/wpcom-store.ts` registers the one global store the app still
+  needs. On the shared foundation
   (`checkout/shared-foundation`) the `/checkout` route registers one of these per open checkout
   in a child registry
   (`checkout-store-provider.tsx`), so two checkouts never share typed state; everywhere else

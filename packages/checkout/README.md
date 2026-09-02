@@ -52,6 +52,19 @@ checkout can see that a payment is going through; only the host can act on it.
 A host that renders no provider is told nothing, which is what the full-page
 route does.
 
+### `state/` — what a shopper has typed
+
+The contact-details model and its updaters, the checkout store, and
+`CheckoutStoreProvider`, which registers one store per open checkout so two of
+them never share a form.
+
+The package hands out `createCheckoutStore()` and registers nothing itself.
+This package declares `sideEffects: false`, so a `register()` running at module
+scope in here would be unsafe twice over: a bundler is free to drop the module
+holding it, and if it survives, whether it has run by the time anything reads
+the store depends on import order. Registering the one global store is the
+app's job.
+
 ### `order/` — following a purchase to its end
 
 `useOrderTransaction` polls an order until the server says what happened to it.

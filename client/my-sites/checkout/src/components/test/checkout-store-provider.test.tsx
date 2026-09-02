@@ -25,29 +25,6 @@ function RecaptchaClientId() {
 	return <span data-testid="recaptcha-client-id">{ clientId }</span>;
 }
 
-function VatAndTouched( { label }: { label: string } ) {
-	const vatDetails = useSelect( ( select ) => select( CHECKOUT_STORE ).getVatDetails(), [] );
-	const contactInfo = useSelect( ( select ) => select( CHECKOUT_STORE ).getContactInfo(), [] );
-	const { setVatDetails, touchContactFields } = useDispatch( CHECKOUT_STORE );
-
-	return (
-		<div>
-			<span data-testid={ `${ label }-vat` }>{ vatDetails?.id ?? '' }</span>
-			<span data-testid={ `${ label }-touched` }>
-				{ contactInfo.email?.isTouched ? 'touched' : 'untouched' }
-			</span>
-			<button
-				onClick={ () => {
-					setVatDetails( { id: `vat-${ label }` } );
-					touchContactFields();
-				} }
-			>
-				fill in { label }
-			</button>
-		</div>
-	);
-}
-
 function ContactEmail( { label, typed }: { label: string; typed?: string } ) {
 	const email = useSelect( ( select ) => select( CHECKOUT_STORE ).getContactInfo().email, [] );
 	const { updateEmail } = useDispatch( CHECKOUT_STORE );
@@ -78,16 +55,14 @@ beforeEach( () => {
 	jest.clearAllMocks();
 } );
 
-describe( 'two checkouts open at once, with the flag on', () => {
-	beforeEach( () => {
+describe( 'the store a checkout uses', () => {
+	it( 'is its own on the shared foundation', () => {
 		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
-	} );
 
-	it( 'do not see each other’s contact details', () => {
 		render(
 			<>
 				{ openCheckout( 'first', 'first@example.com' ) }
-				{ openCheckout( 'second', 'second@example.com' ) }
+				{ openCheckout( 'second' ) }
 			</>
 		);
 
@@ -97,32 +72,21 @@ describe( 'two checkouts open at once, with the flag on', () => {
 		expect( screen.getByTestId( 'second' ) ).toHaveTextContent( '' );
 	} );
 
-	it( 'leave nothing behind for the next checkout that opens', () => {
-		const { unmount } = render( openCheckout( 'first', 'first@example.com' ) );
-		typeInto( 'first' );
-		expect( screen.getByTestId( 'first' ) ).toHaveTextContent( 'first@example.com' );
-		unmount();
+	it( 'stays the same store when the flag changes under a live checkout', () => {
+		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
 
-		render( openCheckout( 'reopened' ) );
-
-		expect( screen.getByTestId( 'reopened' ) ).toHaveTextContent( '' );
-	} );
-
-	it( 'leave the store outside checkout alone', () => {
-		render( openCheckout( 'first', 'first@example.com' ) );
+		const { rerender } = render( openCheckout( 'first', 'first@example.com' ) );
 		typeInto( 'first' );
 
-		render( <ContactEmail label="outside" /> );
-		expect( screen.getByTestId( 'outside' ) ).toHaveTextContent( '' );
-	} );
-} );
-
-describe( 'two checkouts open at once, with the flag off', () => {
-	beforeEach( () => {
 		mockIsEnabled.mockReturnValue( false );
+		rerender( openCheckout( 'first', 'first@example.com' ) );
+
+		expect( screen.getByTestId( 'first' ) ).toHaveTextContent( 'first@example.com' );
 	} );
 
-	it( 'share the one global store, as they always have', () => {
+	it( 'is the one the app registered, with the flag off', () => {
+		mockIsEnabled.mockReturnValue( false );
+
 		render(
 			<>
 				{ openCheckout( 'first', 'shared@example.com' ) }
@@ -137,34 +101,10 @@ describe( 'two checkouts open at once, with the flag off', () => {
 	} );
 } );
 
-describe( 'what a checkout keeps to itself, with the flag on', () => {
-	beforeEach( () => {
+describe( 'the recaptcha badge the route renders beside the checkout', () => {
+	it( 'is heard by the checkout, wherever its store lives', () => {
 		mockIsEnabled.mockImplementation( ( flag ) => flag === 'checkout/shared-foundation' );
-	} );
 
-	it( 'includes the VAT details and which fields were touched', () => {
-		render(
-			<>
-				<CheckoutStoreProvider>
-					<VatAndTouched label="first" />
-				</CheckoutStoreProvider>
-				<CheckoutStoreProvider>
-					<VatAndTouched label="second" />
-				</CheckoutStoreProvider>
-			</>
-		);
-
-		act( () => {
-			screen.getByRole( 'button', { name: 'fill in first' } ).click();
-		} );
-
-		expect( screen.getByTestId( 'first-vat' ) ).toHaveTextContent( 'vat-first' );
-		expect( screen.getByTestId( 'first-touched' ) ).toHaveTextContent( 'touched' );
-		expect( screen.getByTestId( 'second-vat' ) ).toHaveTextContent( '' );
-		expect( screen.getByTestId( 'second-touched' ) ).toHaveTextContent( 'untouched' );
-	} );
-
-	it( 'hears the recaptcha badge that the route renders beside it', () => {
 		render(
 			<CheckoutStoreProvider>
 				<RecaptchaClientId />

@@ -1,7 +1,7 @@
 import {
 	emptyManagedContactDetails,
 	managedContactDetailsUpdaters as updaters,
-} from '../wpcom-store-state';
+} from '../contact-details';
 import type { PossiblyCompleteDomainContactDetails } from '@automattic/wpcom-checkout';
 
 const noSavedDetails: PossiblyCompleteDomainContactDetails = {
