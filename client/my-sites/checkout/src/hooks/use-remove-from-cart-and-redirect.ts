@@ -1,9 +1,8 @@
 import { useShoppingCart } from '@automattic/shopping-cart';
 import { useCallback, useState, useRef, useEffect } from 'react';
 import { leaveCheckout } from 'calypso/my-sites/checkout/src/lib/leave-checkout';
-import { useSelector } from 'calypso/state';
-import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
 import { useCheckoutHostNavigate, useCheckoutCartKey } from './use-checkout-host-bridge';
+import { useCheckoutPreviousRoute } from './use-checkout-surface';
 import useValidCheckoutBackUrl from './use-valid-checkout-back-url';
 import type { RemoveProductFromCart, ResponseCart } from '@automattic/shopping-cart';
 
@@ -15,7 +14,7 @@ export default function useRemoveFromCartAndRedirect(
 	isRemovingProductFromCart: boolean;
 	removeProductFromCartAndMaybeRedirect: RemoveProductFromCart;
 } {
-	const previousPath = useSelector( getPreviousRoute );
+	const previousPath = useCheckoutPreviousRoute();
 	const cartKey = useCheckoutCartKey();
 	const { removeProductFromCart } = useShoppingCart( cartKey );
 

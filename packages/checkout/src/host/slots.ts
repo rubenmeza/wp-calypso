@@ -22,6 +22,22 @@ export interface CheckoutHostSlots {
 	isAkismetCheckout?: () => boolean;
 	isWcMobileApp?: () => boolean;
 
+	/* Which signup or onboarding flow sent the shopper here, and whether they
+	   arrived on a Gravatar domain. */
+	useIsOnboardingAffiliateFlow?: () => boolean;
+	useIsOnboardingUnifiedFlow?: () => boolean;
+	useHasGravatarDomainQueryParam?: () => boolean;
+
+	/* Where the shopper came from, for the close and back affordances.
+
+	   Hooks rather than plain values, like the legacy reads below: a host that
+	   answers these from its own store has to read that store at render time,
+	   and the slot bag is a constant, so which slots a checkout has cannot
+	   change while it is mounted. */
+	usePreviousRoute?: () => string | undefined;
+	usePreviousPath?: () => string | undefined;
+	useInitialQueryArguments?: () => Record< string, unknown > | null;
+
 	/**
 	 * The reads the shared queries replaced.
 	 *
