@@ -10,9 +10,7 @@ import { useSelect } from '@wordpress/data';
 import { useState, useEffect } from '@wordpress/element';
 import { useI18n } from '@wordpress/react-i18n';
 import debugFactory from 'debug';
-import { useDispatch } from 'react-redux';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { errorNotice } from 'calypso/state/notices/actions';
+import { useCheckoutNotices, useCheckoutRecordEvent } from '../../hooks/use-checkout-host-bridge';
 import { useVgsFormSubmit } from '../../hooks/use-vgs-form-submit';
 import { useVgsFormValidation } from '../../hooks/use-vgs-form-validation';
 import { logStashEvent } from '../../lib/analytics';
@@ -64,7 +62,8 @@ export default function CreditCardPayButton( {
 	const cardNumberElement = elements?.getElement( CardNumberElement ) ?? undefined;
 
 	const [ displayFieldsError, setDisplayFieldsError ] = useState( '' );
-	const reduxDispatch = useDispatch();
+	const notices = useCheckoutNotices();
+	const recordEvent = useCheckoutRecordEvent();
 	useEffect( () => {
 		if ( displayFieldsError ) {
 			// The invalid fields live in the payment step, which may be scrolled
@@ -74,10 +73,10 @@ export default function CreditCardPayButton( {
 			document
 				.getElementById( PAYMENT_METHOD_STEP_ID )
 				?.scrollIntoView?.( { behavior: 'smooth', block: 'start' } );
-			reduxDispatch( errorNotice( displayFieldsError, { ariaLive: 'assertive', role: 'alert' } ) );
+			notices.error( displayFieldsError, { ariaLive: 'assertive', role: 'alert' } );
 			setDisplayFieldsError( '' );
 		}
-	}, [ displayFieldsError, reduxDispatch ] );
+	}, [ displayFieldsError, notices ] );
 	// This must be typed as optional because it's injected by cloning the
 	// element in CheckoutSubmitButton, but the uncloned element does not have
 	// this prop yet.
@@ -108,11 +107,9 @@ export default function CreditCardPayButton( {
 								'Something seems to be wrong with the credit card form. Please try again or contact support for help.'
 							)
 						);
-						reduxDispatch(
-							recordTracksEvent( 'calypso_checkout_card_missing_element', {
-								error: 'No card number element found on page when submtting form.',
-							} )
-						);
+						recordEvent( 'calypso_checkout_card_missing_element', {
+							error: 'No card number element found on page when submtting form.',
+						} );
 						logStashEvent( 'calypso_checkout_card_missing_element', {
 							error: 'No card number element found on page when submtting form.',
 						} );
