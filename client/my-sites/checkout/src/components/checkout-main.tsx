@@ -19,7 +19,6 @@ import { useCallback, useMemo } from 'react';
 import { getDashboardFromHostname } from 'calypso/dashboard/app/routing';
 import { getDashboardStepperLogo } from 'calypso/dashboard/app/stepper-logo';
 import { useCheckoutMigrationIntroductoryOfferSticker } from 'calypso/data/site-migration/use-checkout-migration-introductory-offer-sticker';
-import { recordAddEvent } from 'calypso/lib/analytics/cart';
 import PageViewTracker from 'calypso/lib/analytics/page-view-tracker';
 import useSiteDomains from 'calypso/my-sites/checkout/src/hooks/use-site-domains';
 import { useSelector, useDispatch } from 'calypso/state';
@@ -29,6 +28,10 @@ import isAtomicSite from 'calypso/state/selectors/is-site-automated-transfer';
 import { isJetpackSite, isCommerceGardenSite } from 'calypso/state/sites/selectors';
 import useActOnceOnStrings from '../hooks/use-act-once-on-strings';
 import useAddProductsFromUrl from '../hooks/use-add-products-from-url';
+import {
+	useCheckoutRecordCartAddEvent,
+	useCheckoutRecordRecaptchaAction,
+} from '../hooks/use-checkout-analytics-bridge';
 import { useCheckoutCountryList } from '../hooks/use-checkout-country-list';
 import useCheckoutFlowTrackKey from '../hooks/use-checkout-flow-track-key';
 import {
@@ -37,6 +40,10 @@ import {
 	useCheckoutSiteId,
 	useCheckoutCartKey,
 } from '../hooks/use-checkout-host-bridge';
+import {
+	useCheckoutPaymentGatewayLoader,
+	useCheckoutStripeConfiguration,
+} from '../hooks/use-checkout-service-bridge';
 import useCheckoutSiteSlug from '../hooks/use-checkout-site-slug';
 import { useCheckoutStoredPaymentMethods } from '../hooks/use-checkout-stored-payment-methods';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
@@ -155,6 +162,8 @@ export default function CheckoutMain( {
 	const siteId = useCheckoutSiteId( siteIdFromProps );
 	const notices = useCheckoutNotices();
 	const recordEvent = useCheckoutRecordEvent();
+	const recordCartAddEvent = useCheckoutRecordCartAddEvent();
+	const recordRecaptchaAction = useCheckoutRecordRecaptchaAction();
 
 	const isJetpackNotAtomic =
 		useSelector( ( state ) => {
@@ -166,6 +175,8 @@ export default function CheckoutMain( {
 	const isPrivate = useSelector( ( state ) => siteId && isPrivateSite( state, siteId ) ) || false;
 	const isGravatarDomain = useSelector( hasGravatarDomainQueryParam );
 	const cartKey = useCheckoutCartKey();
+	const getStripeConfiguration = useCheckoutStripeConfiguration();
+	const loadPaymentGateway = useCheckoutPaymentGatewayLoader();
 
 	/**
 	 * The definition of what makes "siteless checkout" varies considerably.
@@ -480,7 +491,7 @@ export default function CheckoutMain( {
 	const addItemAndLog: ( item: MinimalRequestCartProduct ) => void = useCallback(
 		( cartItem ) => {
 			try {
-				recordAddEvent( cartItem );
+				recordCartAddEvent( cartItem );
 			} catch ( error ) {
 				logStashEvent( 'checkout_add_product_analytics_error', {
 					error: String( error ),
@@ -490,7 +501,7 @@ export default function CheckoutMain( {
 				// Nothing needs to be done here. CartMessages will display the error to the user.
 			} );
 		},
-		[ addProductsToCart ]
+		[ addProductsToCart, recordCartAddEvent ]
 	);
 
 	const isAkismetSitelessCheckout = responseCart.products.some(
@@ -500,6 +511,9 @@ export default function CheckoutMain( {
 	const includeGSuiteDetails = contactDetailsType === 'gsuite';
 	const dataForProcessor: PaymentProcessorOptions = useMemo(
 		() => ( {
+			getStripeConfiguration,
+			loadPaymentGateway,
+			recordRecaptchaAction,
 			contactDetails,
 			createUserAndSiteBeforeTransaction,
 			getThankYouUrl,
@@ -517,6 +531,9 @@ export default function CheckoutMain( {
 			isAkismetSitelessCheckout,
 		} ),
 		[
+			getStripeConfiguration,
+			loadPaymentGateway,
+			recordRecaptchaAction,
 			contactDetails,
 			createUserAndSiteBeforeTransaction,
 			getThankYouUrl,

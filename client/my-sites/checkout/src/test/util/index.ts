@@ -10,7 +10,10 @@ import { prettyDOM } from '@testing-library/react';
 import nock from 'nock';
 import { createStore, applyMiddleware } from 'redux';
 import { thunk } from 'redux-thunk';
+import { recordGoogleRecaptchaAction } from 'calypso/lib/analytics/recaptcha';
 import { useExperiment } from 'calypso/lib/explat';
+import paymentGatewayLoader from 'calypso/lib/payment-gateway-loader';
+import { getStripeConfiguration } from 'calypso/lib/store-transactions';
 import wpcom from 'calypso/lib/wp';
 import domainManagementReducer from 'calypso/state/domains/management/reducer';
 import noticesReducer from 'calypso/state/notices/reducer';
@@ -49,6 +52,12 @@ export const processorOptions = {
 	// The same client the processors used to import directly, so the nocked
 	// endpoints these tests set up are still the ones they hit.
 	wpcom,
+	// The real ones, for the same reason as the client above: a processor that
+	// reaches Stripe or a partner SDK should hit what it always hit.
+	getStripeConfiguration,
+	loadPaymentGateway: ( gatewayUrl: string, gatewayNamespace: string ) =>
+		paymentGatewayLoader.ready( gatewayUrl, gatewayNamespace ),
+	recordRecaptchaAction: recordGoogleRecaptchaAction,
 	includeDomainDetails: false,
 	includeGSuiteDetails: false,
 	createUserAndSiteBeforeTransaction: false,

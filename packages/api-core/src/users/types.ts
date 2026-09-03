@@ -31,3 +31,28 @@ export type ReaderUser = Pick<
 	| 'avatar_URL'
 	| 'profile_URL'
 >;
+
+export interface CreateUserAccountParams {
+	email?: string;
+	is_passwordless: boolean;
+	signup_flow_name: string;
+	validate: boolean;
+	should_create_site: boolean;
+	locale: string;
+	client_id: string;
+	client_secret: string;
+	extra?: Record< string, unknown >;
+	new_site_params?: Record< string, unknown >;
+	tos?: Record< string, unknown >;
+	'g-recaptcha-error'?: string;
+	'g-recaptcha-response'?: string;
+}
+
+export interface CreateUserAccountResponse {
+	success: boolean;
+	bearer_token?: string;
+	username?: string;
+	blog_details?: {
+		blogid?: string;
+	};
+}

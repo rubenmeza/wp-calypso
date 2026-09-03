@@ -1,5 +1,6 @@
 import { recordAddEvent } from 'calypso/lib/analytics/cart';
 import { gaRecordEvent } from 'calypso/lib/analytics/ga';
+import { recordGoogleRecaptchaAction } from 'calypso/lib/analytics/recaptcha';
 import { useEnabledCheckoutHost } from './use-checkout-host-bridge';
 import type { CheckoutHostContext } from '@automattic/checkout';
 
@@ -19,4 +20,10 @@ export function useCheckoutRecordGaEvent(): CheckoutHostContext[ 'recordGaEvent'
 export function useCheckoutRecordCartAddEvent(): CheckoutHostContext[ 'recordCartAddEvent' ] {
 	const host = useEnabledCheckoutHost();
 	return host?.recordCartAddEvent ?? recordAddEvent;
+}
+
+/** The reCAPTCHA challenge a logged-out shopper passes on the way to an account. */
+export function useCheckoutRecordRecaptchaAction(): CheckoutHostContext[ 'recordRecaptchaAction' ] {
+	const host = useEnabledCheckoutHost();
+	return host?.recordRecaptchaAction ?? recordGoogleRecaptchaAction;
 }

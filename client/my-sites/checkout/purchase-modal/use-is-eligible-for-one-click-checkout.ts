@@ -31,7 +31,12 @@ const useIsContactInfoValid = (
 	};
 
 	return useQuery( {
-		queryKey: [ 'contact-info-validation-result' ],
+		queryKey: [
+			'contact-info-validation-result',
+			storedCard?.user_id ?? null,
+			storedCard?.stored_details_id ?? null,
+			storedCard?.tax_location ?? null,
+		],
 		queryFn: validateContactDetails,
 		enabled: paymentMethods.length !== 0,
 		refetchOnWindowFocus: true,
