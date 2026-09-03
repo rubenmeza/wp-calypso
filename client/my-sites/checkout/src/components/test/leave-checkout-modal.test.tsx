@@ -429,8 +429,7 @@ describe( 'useCheckoutLeaveModal.clickStepBack', () => {
 } );
 
 describe( 'useCheckoutLeaveModal with a checkout host mounted', () => {
-	// The host's cart key is authoritative once the flag is on, so a host that
-	// reports none would put this checkout on a different cart than the fixture.
+	// The host's cart key wins, so this fixture has to set one.
 	const host: CheckoutHostContext = createTestCheckoutHost( {
 		siteId: 1234,
 		cartKey: NEW_SITE_CART_KEY,

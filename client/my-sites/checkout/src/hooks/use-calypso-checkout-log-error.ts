@@ -3,9 +3,9 @@ import { logToLogstash } from 'calypso/lib/logstash';
 import type { CheckoutErrorLog, CheckoutHostContext } from '@automattic/checkout';
 
 /**
- * Calypso's fault log, in the shape the checkout asks for. The checkout's
- * severity vocabulary is narrower than Logstash's `extra`-carrying payload, so
- * the mapping is spelled out here rather than left to the call sites.
+ * The checkout's severity vocabulary is narrower than Logstash's
+ * `extra`-carrying payload, so the mapping is spelled out here rather than left
+ * to the call sites.
  *
  * Its own module because `logToLogstash` posts through `calypso/lib/wp`, which
  * builds an HTTP client the moment it is imported. Anything that only wants to
