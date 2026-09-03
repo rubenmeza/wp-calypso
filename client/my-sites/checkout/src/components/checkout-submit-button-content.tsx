@@ -5,7 +5,7 @@ import { styled } from '@automattic/wpcom-checkout';
 import { sprintf } from '@wordpress/i18n';
 import { Icon, lock } from '@wordpress/icons';
 import { useI18n } from '@wordpress/react-i18n';
-import useCartKey from '../../use-cart-key';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { useMobileCheckoutStickySummaryExperiment } from '../hooks/use-mobile-checkout-sticky-summary-experiment';
 
 const CreditCardPayButtonWrapper = styled.span`
@@ -49,7 +49,7 @@ const StyledLockIcon = styled( Icon )`
  */
 export function CheckoutSubmitButtonContent( { last4 }: { last4?: string } = {} ) {
 	const { __, _x } = useI18n();
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const isPurchaseFree = responseCart.total_cost_integer === 0;
 	const { formStatus } = useFormStatus();

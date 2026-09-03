@@ -22,7 +22,6 @@ import { useCheckoutMigrationIntroductoryOfferSticker } from 'calypso/data/site-
 import { recordAddEvent } from 'calypso/lib/analytics/cart';
 import PageViewTracker from 'calypso/lib/analytics/page-view-tracker';
 import useSiteDomains from 'calypso/my-sites/checkout/src/hooks/use-site-domains';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import { useSelector, useDispatch } from 'calypso/state';
 import hasGravatarDomainQueryParam from 'calypso/state/selectors/has-gravatar-domain-query-param';
 import isPrivateSite from 'calypso/state/selectors/is-private-site';
@@ -36,6 +35,7 @@ import {
 	useCheckoutNotices,
 	useCheckoutRecordEvent,
 	useCheckoutSiteId,
+	useCheckoutCartKey,
 } from '../hooks/use-checkout-host-bridge';
 import useCheckoutSiteSlug from '../hooks/use-checkout-site-slug';
 import { useCheckoutStoredPaymentMethods } from '../hooks/use-checkout-stored-payment-methods';
@@ -165,7 +165,7 @@ export default function CheckoutMain( {
 		} ) || sitelessCheckoutType === 'jetpack';
 	const isPrivate = useSelector( ( state ) => siteId && isPrivateSite( state, siteId ) ) || false;
 	const isGravatarDomain = useSelector( hasGravatarDomainQueryParam );
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 
 	/**
 	 * The definition of what makes "siteless checkout" varies considerably.

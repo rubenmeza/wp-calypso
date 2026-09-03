@@ -29,7 +29,9 @@ import {
 	mockGetVatInfoEndpoint,
 	mockGetSupportedCountriesEndpoint,
 	mockLogStashEndpoint,
+	siteId,
 } from './util';
+import { createTestCheckoutHost } from './util/checkout-host';
 import { MockCheckout } from './util/mock-checkout';
 import type { SitelessCheckoutType } from '@automattic/wpcom-checkout';
 
@@ -94,15 +96,9 @@ describe( 'CheckoutMain', () => {
 	} );
 
 	it( 'renders the same checkout, and reports through the host, when a host is mounted', async () => {
-		const checkoutHost = {
-			siteId: 1234,
-			navigate: jest.fn(),
-			close: jest.fn(),
-			onComplete: jest.fn(),
-			notices: { error: jest.fn(), info: jest.fn() },
-			urlParams: new URLSearchParams( '' ),
-			recordEvent: jest.fn(),
-		};
+		// The host owns the cart key once the flag is on, so it has to name the
+		// same cart the fixture set up.
+		const checkoutHost = createTestCheckoutHost( { siteId, cartKey: siteId } );
 
 		render(
 			<MockCheckout

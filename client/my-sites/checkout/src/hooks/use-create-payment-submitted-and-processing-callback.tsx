@@ -6,7 +6,6 @@ import { recordPurchase } from 'calypso/lib/analytics/record-purchase';
 import { hasEcommercePlan } from 'calypso/lib/cart-values/cart-items';
 import getThankYouPageUrl from 'calypso/my-sites/checkout/get-thank-you-page-url';
 import useSiteDomains from 'calypso/my-sites/checkout/src/hooks/use-site-domains';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import {
 	retrieveSignupDestination,
 	clearSignupDestinationCookie,
@@ -29,6 +28,7 @@ import { getSelectedSite, getSelectedSiteId } from 'calypso/state/ui/selectors';
 import { recordCompositeCheckoutErrorDuringAnalytics } from '../lib/analytics';
 import normalizeTransactionResponse from '../lib/normalize-transaction-response';
 import { absoluteRedirectThroughPending, redirectThroughPending } from '../lib/pending-page';
+import { useCheckoutCartKey } from './use-checkout-host-bridge';
 import type {
 	PaymentEventCallback,
 	PaymentEventCallbackArguments,
@@ -86,7 +86,7 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 	 */
 	fromSiteSlug?: string;
 } ): PaymentEventCallback {
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart, reloadFromServer: reloadCart } = useShoppingCart( cartKey );
 	const reduxDispatch = useDispatch();
 	const siteId = useSelector( getSelectedSiteId );

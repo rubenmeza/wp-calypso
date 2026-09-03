@@ -35,8 +35,8 @@ import {
 	getIsOnboardingAffiliateFlow,
 	getIsOnboardingUnifiedFlow,
 } from 'calypso/state/signup/flow/selectors';
-import useCartKey from '../../use-cart-key';
 import { getAffiliateCouponLabel } from '../../utils';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { CheckIcon } from './check-icon';
 import type { Theme } from '@automattic/composite-checkout';
 import type {
@@ -137,7 +137,7 @@ function LineItemIntroOfferCostOverrideDetail( {
 	product: ResponseCartProduct;
 	costOverride: LineItemCostOverrideForDisplay;
 } ) {
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const translate = useTranslate();
 	if ( ! product.introductory_offer_terms?.enabled ) {
