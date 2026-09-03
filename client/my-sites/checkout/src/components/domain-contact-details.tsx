@@ -1,14 +1,14 @@
 import { useShoppingCart } from '@automattic/shopping-cart';
+import {
+	hasGoogleApps,
+	hasDomainRegistration,
+	hasTransferProduct,
+} from '@automattic/wpcom-checkout';
 import { Fragment } from 'react';
 import ManagedContactDetailsFormFields from 'calypso/components/domains/contact-details-form-fields/managed-contact-details-form-fields';
 import RegistrantExtraInfoCaForm from 'calypso/components/domains/registrant-extra-info/ca-form';
 import RegistrantExtraInfoFrForm from 'calypso/components/domains/registrant-extra-info/fr-form';
 import RegistrantExtraInfoUkForm from 'calypso/components/domains/registrant-extra-info/uk-form';
-import {
-	hasGoogleApps,
-	hasDomainRegistration,
-	hasTransferProduct,
-} from 'calypso/lib/cart-values/cart-items';
 import { getTopLevelOfTld } from 'calypso/lib/domains';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { VatForm } from './vat-form';

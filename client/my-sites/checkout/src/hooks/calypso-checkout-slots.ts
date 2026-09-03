@@ -1,5 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import isAkismetCheckout from 'calypso/lib/akismet/is-akismet-checkout';
+import isJetpackCheckout from 'calypso/lib/jetpack/is-jetpack-checkout';
+import { isWcMobileApp } from 'calypso/lib/mobile-app';
 import useVatDetails, { vatDetailsQueryKey } from 'calypso/me/purchases/vat-info/use-vat-details';
 import { useSelector } from 'calypso/state';
 import { getCurrentUserCountryCode } from 'calypso/state/current-user/selectors';
@@ -36,6 +39,9 @@ function useOnVatDetailsSaved() {
  * the host makes this a memoised hook again, and inherits that constraint.
  */
 export const calypsoCheckoutSlots: CheckoutHostSlots = {
+	isJetpackCheckout,
+	isAkismetCheckout,
+	isWcMobileApp,
 	legacyReads: {
 		useUserCountryCode,
 		useVatDetails: useLegacyVatDetails,

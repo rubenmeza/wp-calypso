@@ -2,7 +2,6 @@ import { isMonthly, getPlan, getBillingMonthsForTerm } from '@automattic/calypso
 import { localizeUrl } from '@automattic/i18n-utils';
 import { ResponseCart } from '@automattic/shopping-cart';
 import { REGISTER_DOMAIN } from '@automattic/urls';
-import { translate } from 'i18n-calypso';
 import {
 	hasDomainRegistration,
 	hasPlan,
@@ -10,7 +9,8 @@ import {
 	isNextDomainFree,
 	hasP2PlusPlan,
 	has100YearPlan,
-} from 'calypso/lib/cart-values/cart-items';
+} from '@automattic/wpcom-checkout';
+import { translate } from 'i18n-calypso';
 import CheckoutTermsItem from 'calypso/my-sites/checkout/src/components/checkout-terms-item';
 
 function getBillingMonthsForPlan( cart: ResponseCart ) {
