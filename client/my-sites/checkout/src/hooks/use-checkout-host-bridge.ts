@@ -1,11 +1,13 @@
 import { useOptionalCheckoutHost } from '@automattic/checkout';
 import { useMemo } from 'react';
+import useCartKey from '../../use-cart-key';
 import { isSharedFoundationEnabled } from '../lib/shared-foundation';
 import {
 	useCalypsoCheckoutNotices,
 	useCalypsoCheckoutRecordEvent,
-} from './use-calypso-checkout-host';
+} from './use-calypso-checkout-capabilities';
 import type { CheckoutHostContext, CheckoutNotices } from '@automattic/checkout';
+import type { CartKey } from '@automattic/shopping-cart';
 
 /**
  * These hooks are the host-context part of the shared foundation: with the flag
@@ -19,7 +21,7 @@ import type { CheckoutHostContext, CheckoutNotices } from '@automattic/checkout'
  * the direct reads whatever the flag says. The whole file goes away once the
  * context is the only path.
  */
-function useEnabledCheckoutHost(): CheckoutHostContext | null {
+export function useEnabledCheckoutHost(): CheckoutHostContext | null {
 	const host = useOptionalCheckoutHost();
 	return isSharedFoundationEnabled() ? host : null;
 }
@@ -66,4 +68,19 @@ export function useCheckoutHostNavigate(): CheckoutHostContext[ 'navigate' ] | u
  */
 export function useCheckoutHostClose(): CheckoutHostContext[ 'close' ] | null {
 	return useEnabledCheckoutHost()?.close ?? null;
+}
+
+/**
+ * The cart the shopping-cart manager should load.
+ *
+ * Which cart it is depends on the site, whether the shopper is logged in and
+ * which siteless checkout this is — facts the host owns. With the flag off this
+ * is the same derivation the checkout has always run for itself.
+ */
+export function useCheckoutCartKey(): CartKey | undefined {
+	const host = useEnabledCheckoutHost();
+	const calypsoCartKey = useCartKey();
+	// Deliberately not `??`: a host that reports no cart at all is answering,
+	// not leaving a gap for the legacy derivation to fill.
+	return host ? host.cartKey : calypsoCartKey;
 }

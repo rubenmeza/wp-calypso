@@ -2,6 +2,7 @@ export { CheckoutHostProvider, useCheckoutHost, useOptionalCheckoutHost } from '
 export type {
 	CheckoutCloseOptions,
 	CheckoutCompletionResult,
+	CheckoutErrorLog,
 	CheckoutHostContext,
 	CheckoutNoticeOptions,
 	CheckoutNotices,

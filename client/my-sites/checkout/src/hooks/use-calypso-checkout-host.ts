@@ -1,53 +1,22 @@
 import { useCallback, useMemo } from 'react';
+import { recordAddEvent } from 'calypso/lib/analytics/cart';
+import { gaRecordEvent } from 'calypso/lib/analytics/ga';
+import { recordGoogleRecaptchaAction } from 'calypso/lib/analytics/recaptcha';
+import { recordPurchase } from 'calypso/lib/analytics/record-purchase';
 import { navigate } from 'calypso/lib/navigate';
-import { useDispatch, useSelector } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { errorNotice, infoNotice } from 'calypso/state/notices/actions';
+import paymentGatewayLoader from 'calypso/lib/payment-gateway-loader';
+import { getStripeConfiguration } from 'calypso/lib/store-transactions';
+import { useSelector } from 'calypso/state';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
+import useCartKey from '../../use-cart-key';
 import { leaveCheckout } from '../lib/leave-checkout';
+import {
+	useCalypsoCheckoutNotices,
+	useCalypsoCheckoutRecordEvent,
+} from './use-calypso-checkout-capabilities';
+import { useCalypsoCheckoutLogError } from './use-calypso-checkout-log-error';
 import useValidCheckoutBackUrl from './use-valid-checkout-back-url';
-import type {
-	CheckoutCloseOptions,
-	CheckoutHostContext,
-	CheckoutNoticeOptions,
-	CheckoutNotices,
-} from '@automattic/checkout';
-import type { NoticeActionCreator } from 'calypso/state/notices/types';
-import type { ReactNode } from 'react';
-
-/**
- * Calypso's notice store, in the shape the checkout asks for. Shared with the
- * bridge so the flag-off path shows notices exactly the same way.
- */
-export function useCalypsoCheckoutNotices(): CheckoutNotices {
-	const reduxDispatch = useDispatch();
-
-	return useMemo( () => {
-		const show =
-			( createNotice: NoticeActionCreator ) =>
-			( message: ReactNode, options?: CheckoutNoticeOptions ) => {
-				reduxDispatch(
-					createNotice( message, { id: options?.id, duration: options?.durationMs } )
-				);
-			};
-		return { error: show( errorNotice ), info: show( infoNotice ) };
-	}, [ reduxDispatch ] );
-}
-
-/**
- * Calypso's analytics pipeline, in the shape the checkout asks for. Shared with
- * the bridge so the flag-off path records exactly the same events.
- */
-export function useCalypsoCheckoutRecordEvent(): CheckoutHostContext[ 'recordEvent' ] {
-	const reduxDispatch = useDispatch();
-
-	return useCallback(
-		( name: string, properties?: Record< string, unknown > ) => {
-			reduxDispatch( recordTracksEvent( name, properties ) );
-		},
-		[ reduxDispatch ]
-	);
-}
+import type { CheckoutCloseOptions, CheckoutHostContext } from '@automattic/checkout';
 
 /**
  * Fills the shared checkout's host context with Calypso: its router, its notice
@@ -66,6 +35,8 @@ export default function useCalypsoCheckoutHost( {
 	const forceCheckoutBackUrl = useValidCheckoutBackUrl( siteSlug );
 	const notices = useCalypsoCheckoutNotices();
 	const recordEvent = useCalypsoCheckoutRecordEvent();
+	const logError = useCalypsoCheckoutLogError();
+	const cartKey = useCartKey();
 
 	const close = useCallback(
 		( options?: CheckoutCloseOptions ) => {
@@ -93,7 +64,27 @@ export default function useCalypsoCheckoutHost( {
 	const urlParams = useMemo( () => new URLSearchParams( search ), [ search ] );
 
 	return useMemo(
-		() => ( { siteId, navigate, close, onComplete, notices, urlParams, recordEvent } ),
-		[ close, notices, onComplete, recordEvent, siteId, urlParams ]
+		() => ( {
+			siteId,
+			cartKey,
+			navigate,
+			close,
+			onComplete,
+			notices,
+			urlParams,
+			logError,
+			recordEvent,
+			// `gaRecordEvent` comes from an untyped module as a bare `Function`.
+			// The adapter is the right place to assert its shape: this is where
+			// untyped legacy meets the typed seam.
+			recordGaEvent: gaRecordEvent as CheckoutHostContext[ 'recordGaEvent' ],
+			recordCartAddEvent: recordAddEvent,
+			recordPurchase,
+			recordRecaptchaAction: recordGoogleRecaptchaAction,
+			getStripeConfiguration,
+			loadPaymentGateway: ( gatewayUrl: string, gatewayNamespace: string ) =>
+				paymentGatewayLoader.ready( gatewayUrl, gatewayNamespace ),
+		} ),
+		[ cartKey, close, logError, notices, onComplete, recordEvent, siteId, urlParams ]
 	);
 }
