@@ -4,7 +4,7 @@ import { getLanguageSlugs } from '@automattic/i18n-utils';
 import { useMemo } from 'react';
 import { useSelector } from 'calypso/state';
 import getInitialQueryArguments from 'calypso/state/selectors/get-initial-query-arguments';
-import { getSiteId, isCommerceGardenSite, isJetpackSite } from 'calypso/state/sites/selectors';
+import { useCheckoutSiteFacts } from './use-checkout-site-facts';
 
 const getAllowedHosts = ( siteSlug?: string ): string[] => {
 	const hostname = config< string >( 'hostname' );
@@ -31,15 +31,8 @@ const useValidCheckoutBackUrl = (
 ): string | undefined => {
 	const queryArgs = useSelector( getInitialQueryArguments ) ?? {};
 	const backUrl = queryArgs[ queryArgName ] as string | undefined;
-	const selectedSiteId = useSelector(
-		( state ) => siteId ?? getSiteId( state, siteSlug as string | null )
-	);
-	const jetpackSite = useSelector( ( state ) =>
-		isJetpackSite( state, selectedSiteId, { treatAtomicAsJetpackSite: false } )
-	);
-	const isCommerce = useSelector( ( state ) =>
-		selectedSiteId ? isCommerceGardenSite( state, selectedSiteId ) : false
-	);
+	const site = useCheckoutSiteFacts( siteId, siteSlug );
+	const isSelfHostedJetpack = site.isJetpack && ! site.isAtomic && ! site.isCommerceGarden;
 
 	return useMemo( () => {
 		if ( ! backUrl ) {
@@ -54,7 +47,7 @@ const useValidCheckoutBackUrl = (
 			}
 			// For Jetpack specific checkout, if navigated with direct link
 			// We should redirect to the jetpack pricing page
-			if ( jetpackSite && ! isCommerce ) {
+			if ( isSelfHostedJetpack ) {
 				return 'https://cloud.jetpack.com/pricing/' + ( siteSlug || '' );
 			}
 			return undefined;
@@ -67,7 +60,7 @@ const useValidCheckoutBackUrl = (
 		}
 
 		return undefined;
-	}, [ backUrl, queryArgName, isCommerce, jetpackSite, siteSlug ] );
+	}, [ backUrl, queryArgName, isSelfHostedJetpack, siteSlug ] );
 };
 
 export default useValidCheckoutBackUrl;
