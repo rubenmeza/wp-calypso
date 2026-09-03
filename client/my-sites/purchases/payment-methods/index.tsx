@@ -22,8 +22,9 @@ import PaymentMethodSelector from 'calypso/me/purchases/manage-purchase/payment-
 import { PaymentMethodSelectorSubmitButtonContent } from 'calypso/me/purchases/manage-purchase/payment-method-selector/payment-method-selector-submit-button-content';
 import PaymentMethodList from 'calypso/me/purchases/payment-methods/payment-method-list';
 import titles from 'calypso/me/purchases/titles';
+import { calypsoCheckoutLogError } from 'calypso/my-sites/checkout/src/hooks/use-calypso-checkout-log-error';
 import { useCreateCreditCard } from 'calypso/my-sites/checkout/src/hooks/use-create-payment-methods';
-import { logStashLoadErrorEvent } from 'calypso/my-sites/checkout/src/lib/analytics';
+import { logStashLoadErrorEvent } from 'calypso/my-sites/checkout/src/lib/error-logging';
 import PurchasesNavigation from 'calypso/my-sites/purchases/navigation';
 import { useDispatch, useSelector } from 'calypso/state';
 import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selectors';
@@ -34,7 +35,9 @@ import { getAddNewPaymentMethodUrlFor, getPaymentMethodsUrlFor } from '../paths'
 function useLogPaymentMethodsError( message: string ) {
 	return useCallback(
 		( error: Error ) => {
-			logStashLoadErrorEvent( 'site_level_payment_methods', error, { message } );
+			logStashLoadErrorEvent( calypsoCheckoutLogError, 'site_level_payment_methods', error, {
+				message,
+			} );
 		},
 		[ message ]
 	);

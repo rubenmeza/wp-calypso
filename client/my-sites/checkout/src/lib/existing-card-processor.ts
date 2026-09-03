@@ -6,7 +6,8 @@ import {
 } from '@automattic/composite-checkout';
 import debugFactory from 'debug';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { recordTransactionBeginAnalytics, logStashEvent } from '../lib/analytics';
+import { recordTransactionBeginAnalytics } from '../lib/analytics';
+import { logStashEvent } from '../lib/error-logging';
 import getDomainDetails from './get-domain-details';
 import getPostalCode from './get-postal-code';
 import {
@@ -48,6 +49,7 @@ export default async function existingCardProcessor(
 		reduxDispatch,
 		responseCart,
 		getStripeConfiguration,
+		logError,
 	} = dataForProcessor;
 	if ( ! stripe ) {
 		throw new Error( 'Stripe is required to submit an existing card payment' );
@@ -106,6 +108,7 @@ export default async function existingCardProcessor(
 					: undefined;
 
 				await handle3DSChallenge(
+					logError,
 					reduxDispatch,
 					cardSpecificStripe ?? stripe,
 					stripeResponse.message.payment_intent_client_secret,
@@ -136,6 +139,7 @@ export default async function existingCardProcessor(
 				} )
 			);
 			logStashEvent(
+				logError,
 				'calypso_checkout_existing_card_transaction_failed',
 				{
 					payment_intent_id: paymentIntentId ?? '',
@@ -145,7 +149,7 @@ export default async function existingCardProcessor(
 				'info'
 			);
 
-			handle3DSInFlightError( error, paymentIntentId );
+			handle3DSInFlightError( logError, error, paymentIntentId );
 
 			// Errors here are "expected" errors, meaning that they (hopefully) come
 			// from the endpoint and not from some bug in the frontend code.

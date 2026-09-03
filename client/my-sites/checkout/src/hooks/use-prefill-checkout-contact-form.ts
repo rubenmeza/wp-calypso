@@ -1,16 +1,15 @@
-import config from '@automattic/calypso-config';
 import { useCompleteAllSteps, useSuppressNextForwardScroll } from '@automattic/composite-checkout';
 import { getCountryPostalCodeSupport } from '@automattic/wpcom-checkout';
 import { useDispatch as useWordPressDataDispatch } from '@wordpress/data';
 import debugFactory from 'debug';
 import { useEffect, useRef, useState } from 'react';
-import { logToLogstash } from 'calypso/lib/logstash';
 import { useDispatch as useReduxDispatch } from 'calypso/state';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
-import { convertErrorToString } from '../lib/analytics';
+import { convertErrorToString, logStashEvent } from '../lib/error-logging';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import { useCheckoutCachedContactDetails } from './use-checkout-cached-contact-details';
 import { useCheckoutCountryList } from './use-checkout-country-list';
+import { useCheckoutLogError } from './use-checkout-service-bridge';
 import type { PossiblyCompleteDomainContactDetails } from '@automattic/wpcom-checkout';
 
 const debug = debugFactory( 'calypso:use-prefill-checkout-contact-form' );
@@ -22,6 +21,7 @@ function useCachedContactDetailsForCheckoutForm(
 ): boolean {
 	const countriesList = useCheckoutCountryList();
 	const reduxDispatch = useReduxDispatch();
+	const logError = useCheckoutLogError();
 	const completeAllSteps = useCompleteAllSteps();
 	const suppressNextForwardScroll = useSuppressNextForwardScroll();
 	const [ isComplete, setComplete ] = useState( false );
@@ -116,20 +116,20 @@ function useCachedContactDetailsForCheckoutForm(
 				}
 				// eslint-disable-next-line no-console
 				console.error( 'Error while autocompleting contact details:', error );
-				logToLogstash( {
-					feature: 'calypso_client',
-					message: 'composite checkout autocomplete error',
-					severity: config( 'env_id' ) === 'production' ? 'warning' : 'debug',
-					extra: {
-						env: config( 'env_id' ),
+				logStashEvent(
+					logError,
+					'composite checkout autocomplete error',
+					{
 						type: 'checkout_contact_details_autocomplete',
 						message: convertErrorToString( error ),
 					},
-				} );
+					'warning'
+				);
 			} );
 	}, [
 		setShouldShowContactDetailsValidationErrors,
 		reduxDispatch,
+		logError,
 		completeAllSteps,
 		suppressNextForwardScroll,
 		suppressScrollOnAutoComplete,

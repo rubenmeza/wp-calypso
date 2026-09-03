@@ -17,6 +17,8 @@ export interface PaymentProcessorOptions {
 	loadPaymentGateway: CheckoutHostContext[ 'loadPaymentGateway' ];
 	/** For the account a logged-out shopper creates on the way through. */
 	recordRecaptchaAction: CheckoutHostContext[ 'recordRecaptchaAction' ];
+	/** Where a failed transaction is reported. */
+	logError: CheckoutHostContext[ 'logError' ];
 	includeDomainDetails: boolean;
 	includeGSuiteDetails: boolean;
 	isAkismetSitelessCheckout: boolean;

@@ -1,7 +1,8 @@
 import { useRef, useEffect } from 'react';
-import { logStashEvent } from '../lib/analytics';
+import { logStashEvent } from '../lib/error-logging';
 import { useCheckoutRecordCartAddEvent } from './use-checkout-analytics-bridge';
 import { useCheckoutRecordEvent } from './use-checkout-host-bridge';
+import { useCheckoutLogError } from './use-checkout-service-bridge';
 import type { ResponseCart, RequestCartProduct } from '@automattic/shopping-cart';
 
 export default function useRecordCartLoaded( {
@@ -15,6 +16,7 @@ export default function useRecordCartLoaded( {
 } ): void {
 	const recordEvent = useCheckoutRecordEvent();
 	const recordCartAddEvent = useCheckoutRecordCartAddEvent();
+	const logError = useCheckoutLogError();
 	const hasRecorded = useRef< boolean >( false );
 
 	useEffect( () => {
@@ -30,11 +32,18 @@ export default function useRecordCartLoaded( {
 				try {
 					recordCartAddEvent( productToAdd );
 				} catch ( error ) {
-					logStashEvent( 'checkout_add_product_analytics_error', {
+					logStashEvent( logError, 'checkout_add_product_analytics_error', {
 						error: String( error ),
 					} );
 				}
 			} );
 		}
-	}, [ isInitialCartLoading, productsForCart, recordCartAddEvent, recordEvent, responseCart ] );
+	}, [
+		isInitialCartLoading,
+		logError,
+		productsForCart,
+		recordCartAddEvent,
+		recordEvent,
+		responseCart,
+	] );
 }
