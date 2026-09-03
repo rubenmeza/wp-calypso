@@ -1,6 +1,5 @@
 import config from '@automattic/calypso-config';
 import { StripeHookProvider } from '@automattic/calypso-stripe';
-import { CheckoutHostProvider } from '@automattic/checkout';
 import { CheckoutErrorBoundary } from '@automattic/composite-checkout';
 import styled from '@emotion/styled';
 import { useTranslate } from 'i18n-calypso';
@@ -12,10 +11,10 @@ import { useSelector } from 'calypso/state';
 import { getCurrentUserLocale } from 'calypso/state/current-user/selectors';
 import { getSelectedSiteId } from 'calypso/state/ui/selectors';
 import CalypsoShoppingCartProvider from './calypso-shopping-cart-provider';
+import { CalypsoCheckoutHost } from './src/components/calypso-checkout-host';
 import { CheckoutContent } from './src/components/checkout-content';
 import CheckoutMain from './src/components/checkout-main';
 import { CheckoutStoreProvider } from './src/components/checkout-store-provider';
-import useCalypsoCheckoutHost from './src/hooks/use-calypso-checkout-host';
 import useCheckoutSiteSlug from './src/hooks/use-checkout-site-slug';
 import { logStashLoadErrorEvent } from './src/lib/analytics';
 import { isSharedFoundationEnabled } from './src/lib/shared-foundation';
@@ -123,10 +122,6 @@ export default function CheckoutMainWrapper( {
 		sitelessCheckoutType,
 		jetpackSiteSlug,
 	} );
-	const checkoutHost = useCalypsoCheckoutHost( {
-		siteId: selectedSiteId,
-		siteSlug: checkoutSiteSlug,
-	} );
 
 	const isContentSplit = isSharedFoundationEnabled();
 	const checkoutProps = {
@@ -167,7 +162,9 @@ export default function CheckoutMainWrapper( {
 			>
 				<CalypsoShoppingCartProvider shouldShowPersistentErrors>
 					<StripeHookProvider fetchStripeConfiguration={ getStripeConfiguration } locale={ locale }>
-						<CheckoutHostProvider value={ checkoutHost }>{ checkout }</CheckoutHostProvider>
+						<CalypsoCheckoutHost siteId={ selectedSiteId } siteSlug={ checkoutSiteSlug }>
+							{ checkout }
+						</CalypsoCheckoutHost>
 					</StripeHookProvider>
 				</CalypsoShoppingCartProvider>
 			</CheckoutErrorBoundary>

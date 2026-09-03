@@ -9,6 +9,7 @@ import A4ALogo from 'calypso/a8c-for-agencies/components/a4a-logo';
 import { A4A_MARKETPLACE_LINK } from 'calypso/a8c-for-agencies/components/sidebar-menu/lib/constants';
 import { getStripeConfiguration } from 'calypso/lib/store-transactions';
 import CalypsoShoppingCartProvider from 'calypso/my-sites/checkout/calypso-shopping-cart-provider';
+import { CalypsoCheckoutHost } from 'calypso/my-sites/checkout/src/components/calypso-checkout-host';
 import CheckoutMain from 'calypso/my-sites/checkout/src/components/checkout-main';
 import usePrepareProductsForCart from 'calypso/my-sites/checkout/src/hooks/use-prepare-products-for-cart';
 import { useDispatch, useSelector } from 'calypso/state';
@@ -246,13 +247,15 @@ function BillingDragonCheckoutContent( {
 					</div>
 				</div>
 			) }
-			<CheckoutMain
-				sitelessCheckoutType="a4a"
-				redirectTo={ window.location.origin + '/purchases/licenses' }
-				customizedPreviousPath="/marketplace"
-				siteSlug={ siteSlug ?? '' }
-				siteId={ siteId ?? 0 }
-			/>
+			<CalypsoCheckoutHost siteId={ siteId ?? 0 } siteSlug={ siteSlug ?? '' }>
+				<CheckoutMain
+					sitelessCheckoutType="a4a"
+					redirectTo={ window.location.origin + '/purchases/licenses' }
+					customizedPreviousPath="/marketplace"
+					siteSlug={ siteSlug ?? '' }
+					siteId={ siteId ?? 0 }
+				/>
+			</CalypsoCheckoutHost>
 		</div>
 	);
 }

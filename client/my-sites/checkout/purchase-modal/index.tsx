@@ -16,6 +16,7 @@ import {
 import clsx from 'clsx';
 import { useState, useMemo, useEffect, type PropsWithChildren } from 'react';
 import { recordTracksEvent } from 'calypso/lib/analytics/tracks';
+import { CalypsoCheckoutHost } from 'calypso/my-sites/checkout/src/components/calypso-checkout-host';
 import useCreatePaymentSubmittedAndProcessingCallback from 'calypso/my-sites/checkout/src/hooks/use-create-payment-submitted-and-processing-callback';
 import existingCardProcessor from 'calypso/my-sites/checkout/src/lib/existing-card-processor';
 import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
@@ -289,10 +290,21 @@ function EnsureSelectedSite( { siteSlug, children }: PropsWithChildren< { siteSl
 	return hasSelectedSiteId ? children : null;
 }
 
+function PurchaseModalHost( { siteSlug, children }: PropsWithChildren< { siteSlug: SiteSlug } > ) {
+	const siteId = useSelector( getSelectedSiteId ) ?? undefined;
+	return (
+		<CalypsoCheckoutHost siteId={ siteId } siteSlug={ siteSlug }>
+			{ children }
+		</CalypsoCheckoutHost>
+	);
+}
+
 export default function PurchaseModalWrapped( props: PurchaseModalProps ) {
 	return (
 		<EnsureSelectedSite siteSlug={ props.siteSlug }>
-			<PurchaseModalWrapper { ...props } />
+			<PurchaseModalHost siteSlug={ props.siteSlug }>
+				<PurchaseModalWrapper { ...props } />
+			</PurchaseModalHost>
 		</EnsureSelectedSite>
 	);
 }
