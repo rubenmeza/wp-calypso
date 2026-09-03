@@ -60,6 +60,7 @@ export const processorOptions = {
 		paymentGatewayLoader.ready( gatewayUrl, gatewayNamespace ),
 	recordRecaptchaAction: recordGoogleRecaptchaAction,
 	logError: calypsoCheckoutLogError,
+	recordEvent: () => undefined,
 	includeDomainDetails: false,
 	includeGSuiteDetails: false,
 	createUserAndSiteBeforeTransaction: false,

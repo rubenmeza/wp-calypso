@@ -28,6 +28,7 @@ import { recordCompositeCheckoutErrorDuringAnalytics } from '../lib/analytics';
 import normalizeTransactionResponse from '../lib/normalize-transaction-response';
 import { absoluteRedirectThroughPending, redirectThroughPending } from '../lib/pending-page';
 import { useCheckoutCartKey, useCheckoutRecordEvent } from './use-checkout-host-bridge';
+import { useCheckoutLogError } from './use-checkout-service-bridge';
 import type { CheckoutHostContext } from '@automattic/checkout';
 import type {
 	PaymentEventCallback,
@@ -39,7 +40,6 @@ import type {
 	SitelessCheckoutType,
 } from '@automattic/wpcom-checkout';
 import type { PostCheckoutUrlArguments } from 'calypso/my-sites/checkout/get-thank-you-page-url';
-import type { CalypsoDispatch } from 'calypso/state/types';
 
 const debug = debugFactory( 'calypso:composite-checkout:use-on-payment-complete' );
 
@@ -90,6 +90,7 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 	const { responseCart, reloadFromServer: reloadCart } = useShoppingCart( cartKey );
 	const reduxDispatch = useDispatch();
 	const recordEvent = useCheckoutRecordEvent();
+	const logError = useCheckoutLogError();
 	const siteId = useSelector( getSelectedSiteId );
 	const selectedSiteData = useSelector( getSelectedSite );
 	const adminUrl = selectedSiteData?.options?.admin_url || wpAdminUrl;
@@ -159,17 +160,19 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 				await recordPaymentCompleteAnalytics( {
 					transactionResult,
 					responseCart,
-					reduxDispatch,
+					recordEvent,
+					logError,
 					sitePlanSlug,
 				} );
 			} catch ( err ) {
 				// eslint-disable-next-line no-console
 				console.error( err );
-				reduxDispatch(
-					recordCompositeCheckoutErrorDuringAnalytics( {
+				recordCompositeCheckoutErrorDuringAnalytics(
+					{ recordEvent, logError },
+					{
 						errorObject: err as Error,
 						failureDescription: 'useCreatePaymentSubmittedAndProcessingCallback',
-					} )
+					}
 				);
 			}
 
@@ -290,6 +293,7 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 			isInModal,
 			reduxDispatch,
 			recordEvent,
+			logError,
 			siteId,
 			responseCart,
 			createUserAndSiteBeforeTransaction,
@@ -307,12 +311,14 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 async function recordPaymentCompleteAnalytics( {
 	transactionResult,
 	responseCart,
-	reduxDispatch,
+	recordEvent,
+	logError,
 	sitePlanSlug,
 }: {
 	transactionResult: WPCOMTransactionEndpointResponse | undefined;
 	responseCart: ResponseCart;
-	reduxDispatch: CalypsoDispatch;
+	recordEvent: CheckoutHostContext[ 'recordEvent' ];
+	logError: CheckoutHostContext[ 'logError' ];
 	sitePlanSlug?: string | null;
 } ) {
 	/**
@@ -339,11 +345,12 @@ async function recordPaymentCompleteAnalytics( {
 	} catch ( err ) {
 		// eslint-disable-next-line no-console
 		console.error( err );
-		reduxDispatch(
-			recordCompositeCheckoutErrorDuringAnalytics( {
+		recordCompositeCheckoutErrorDuringAnalytics(
+			{ recordEvent, logError },
+			{
 				errorObject: err as Error,
 				failureDescription: 'useCreatePaymentSubmittedAndProcessingCallback',
-			} )
+			}
 		);
 	}
 }

@@ -8,7 +8,6 @@ import {
 import { getContactDetailsType } from '@automattic/wpcom-checkout';
 import debugFactory from 'debug';
 import { assignNewCardProcessor } from 'calypso/me/purchases/manage-purchase/payment-method-selector/assignment-processor-functions';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { recordTransactionBeginAnalytics } from '../lib/analytics';
 import { logStashEvent } from '../lib/error-logging';
 import { createEbanxTokenVgs } from './create-ebanx-token-vgs';
@@ -79,27 +78,23 @@ async function stripeCardProcessor(
 		responseCart,
 		siteId,
 		contactDetails,
-		reduxDispatch,
 		logError,
+		recordEvent,
 	} = transactionOptions;
-	reduxDispatch(
-		recordTransactionBeginAnalytics( {
-			paymentMethodId: 'stripe',
-			useForAllSubscriptions: submitData.useForAllSubscriptions,
-		} )
-	);
+	recordTransactionBeginAnalytics( transactionOptions, {
+		paymentMethodId: 'stripe',
+		useForAllSubscriptions: submitData.useForAllSubscriptions,
+	} );
 
 	const cartCountry = responseCart.tax.location.country_code ?? '';
 	const formCountry = contactDetails?.countryCode?.value ?? '';
 	if ( cartCountry !== formCountry ) {
 		// Changes to the contact form data should always be sent to the cart, so
 		// this should not be possible.
-		reduxDispatch(
-			recordTracksEvent( 'calypso_checkout_mismatched_tax_location', {
-				form_country: formCountry,
-				cart_country: cartCountry,
-			} )
-		);
+		recordEvent( 'calypso_checkout_mismatched_tax_location', {
+			form_country: formCountry,
+			cart_country: cartCountry,
+		} );
 	}
 
 	let paymentMethodToken;
@@ -146,7 +141,7 @@ async function stripeCardProcessor(
 				paymentIntentId = stripeResponse.message.payment_intent_id;
 				await handle3DSChallenge(
 					logError,
-					reduxDispatch,
+					recordEvent,
 					submitData.stripe,
 					stripeResponse.message.payment_intent_client_secret,
 					paymentIntentId
@@ -167,12 +162,10 @@ async function stripeCardProcessor(
 		} )
 		.catch( ( error: Error ) => {
 			debug( 'transaction failed' );
-			reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_card_transaction_failed', {
-					payment_intent_id: paymentIntentId ?? '',
-					error: error.message,
-				} )
-			);
+			recordEvent( 'calypso_checkout_card_transaction_failed', {
+				payment_intent_id: paymentIntentId ?? '',
+				error: error.message,
+			} );
 			logStashEvent( logError, 'calypso_checkout_card_transaction_failed', {
 				payment_intent_id: paymentIntentId ?? '',
 				tags: [ `payment_intent_id:${ paymentIntentId }` ],
@@ -194,14 +187,9 @@ async function ebanxCardProcessor(
 	if ( ! isValidEbanxCardTransactionData( submitData ) ) {
 		throw new Error( 'Required purchase data is missing' );
 	}
-	const {
-		includeDomainDetails,
-		includeGSuiteDetails,
-		responseCart,
-		contactDetails,
-		reduxDispatch,
-	} = transactionOptions;
-	reduxDispatch( recordTransactionBeginAnalytics( { paymentMethodId: 'ebanx' } ) );
+	const { includeDomainDetails, includeGSuiteDetails, responseCart, contactDetails } =
+		transactionOptions;
+	recordTransactionBeginAnalytics( transactionOptions, { paymentMethodId: 'ebanx' } );
 
 	let paymentMethodToken;
 	let ebanxTokenResponse: EbanxTokenizeResponse;
