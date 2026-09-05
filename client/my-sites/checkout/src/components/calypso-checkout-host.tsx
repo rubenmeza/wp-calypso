@@ -1,6 +1,6 @@
-import { CheckoutHostProvider, CheckoutSlotsProvider } from '@automattic/checkout';
-import { calypsoCheckoutSlots } from '../hooks/calypso-checkout-slots';
+import { CheckoutHostProvider } from '@automattic/checkout';
 import useCalypsoCheckoutHost from '../hooks/use-calypso-checkout-host';
+import { CalypsoCheckoutSlots } from './calypso-checkout-slots';
 import type { ReactNode } from 'react';
 
 interface CalypsoCheckoutHostProps {
@@ -19,11 +19,11 @@ interface CalypsoCheckoutHostProps {
  */
 export function CalypsoCheckoutHost( { siteId, siteSlug, children }: CalypsoCheckoutHostProps ) {
 	return (
-		<CheckoutSlotsProvider value={ calypsoCheckoutSlots }>
+		<CalypsoCheckoutSlots>
 			<CalypsoHostProvider siteId={ siteId } siteSlug={ siteSlug }>
 				{ children }
 			</CalypsoHostProvider>
-		</CheckoutSlotsProvider>
+		</CalypsoCheckoutSlots>
 	);
 }
 
