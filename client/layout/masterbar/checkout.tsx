@@ -4,6 +4,7 @@ import { ThemeProvider } from '@emotion/react';
 import { useViewportMatch } from '@wordpress/compose';
 import clsx from 'clsx';
 import CalypsoShoppingCartProvider from 'calypso/my-sites/checkout/calypso-shopping-cart-provider';
+import { CalypsoCheckoutSlots } from 'calypso/my-sites/checkout/src/components/calypso-checkout-slots';
 import {
 	LeaveCheckoutModal,
 	useCheckoutLeaveModal,
@@ -124,7 +125,9 @@ export default function CheckoutMasterbarWrapper( props: Props ) {
 	return (
 		<CalypsoShoppingCartProvider>
 			<ThemeProvider theme={ checkoutTheme }>
-				<CheckoutMasterbar { ...props } />
+				<CalypsoCheckoutSlots>
+					<CheckoutMasterbar { ...props } />
+				</CalypsoCheckoutSlots>
 			</ThemeProvider>
 		</CalypsoShoppingCartProvider>
 	);
