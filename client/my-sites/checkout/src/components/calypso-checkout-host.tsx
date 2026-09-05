@@ -3,6 +3,12 @@ import { calypsoCheckoutSlots } from '../hooks/calypso-checkout-slots';
 import useCalypsoCheckoutHost from '../hooks/use-calypso-checkout-host';
 import type { ReactNode } from 'react';
 
+interface CalypsoCheckoutHostProps {
+	siteId: number | undefined;
+	siteSlug: string | undefined;
+	children: ReactNode;
+}
+
 /**
  * Puts Calypso behind the checkout's host seam.
  *
@@ -11,20 +17,23 @@ import type { ReactNode } from 'react';
  * and a surface that forgets it gets a checkout with no navigation, no notices
  * and no cart key rather than an error.
  */
-export function CalypsoCheckoutHost( {
-	siteId,
-	siteSlug,
-	children,
-}: {
-	siteId: number | undefined;
-	siteSlug: string | undefined;
-	children: ReactNode;
-} ) {
+export function CalypsoCheckoutHost( { siteId, siteSlug, children }: CalypsoCheckoutHostProps ) {
+	return (
+		<CheckoutSlotsProvider value={ calypsoCheckoutSlots }>
+			<CalypsoHostProvider siteId={ siteId } siteSlug={ siteSlug }>
+				{ children }
+			</CalypsoHostProvider>
+		</CheckoutSlotsProvider>
+	);
+}
+
+/**
+ * Its own component so the host is built *below* the slots provider. Reading a
+ * slot from the component that renders that provider gets an empty bag rather
+ * than an error, and the adapter fills the checkout's back URL from one.
+ */
+function CalypsoHostProvider( { siteId, siteSlug, children }: CalypsoCheckoutHostProps ) {
 	const host = useCalypsoCheckoutHost( { siteId, siteSlug } );
 
-	return (
-		<CheckoutHostProvider value={ host }>
-			<CheckoutSlotsProvider value={ calypsoCheckoutSlots }>{ children }</CheckoutSlotsProvider>
-		</CheckoutHostProvider>
-	);
+	return <CheckoutHostProvider value={ host }>{ children }</CheckoutHostProvider>;
 }
