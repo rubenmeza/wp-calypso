@@ -28,9 +28,9 @@ export function CalypsoCheckoutHost( { siteId, siteSlug, children }: CalypsoChec
 }
 
 /**
- * Its own component so the host is built *below* the slots provider. Reading a
- * slot from the component that renders that provider gets an empty bag rather
- * than an error, and the adapter fills the checkout's back URL from one.
+ * The host has to be built *below* the slots provider: the adapter fills the
+ * checkout's back URL from a slot, and a slot read from the component that
+ * renders the provider gets an empty bag rather than an error.
  */
 function CalypsoHostProvider( { siteId, siteSlug, children }: CalypsoCheckoutHostProps ) {
 	const host = useCalypsoCheckoutHost( { siteId, siteSlug } );

@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider, dehydrate } from '@tanstack/react-que
 import { renderHook, waitFor, act } from '@testing-library/react';
 import wp from 'calypso/lib/wp';
 import { shouldDehydrateQuery } from 'calypso/state/should-dehydrate-query';
-import { CalypsoCheckoutSlots } from '../../test/util/checkout-slots';
+import { CalypsoCheckoutSlots } from '../../components/calypso-checkout-slots';
 import { useCheckoutVatDetails } from '../use-checkout-vat-details';
 import type { ReactNode } from 'react';
 

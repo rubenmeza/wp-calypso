@@ -6,8 +6,8 @@ import { isEnabled } from '@automattic/calypso-config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import getInitialQueryArguments from 'calypso/state/selectors/get-initial-query-arguments';
+import { CalypsoCheckoutSlots } from '../components/calypso-checkout-slots';
 import useValidCheckoutBackUrl from '../hooks/use-valid-checkout-back-url';
-import { CalypsoCheckoutSlots } from './util/checkout-slots';
 import type { Site } from '@automattic/api-core';
 import type { ReactNode } from 'react';
 
