@@ -74,10 +74,6 @@ beforeEach( () => {
 
 describe( 'CalypsoCheckoutHost', () => {
 	it( 'closes to the back URL the shopper arrived with', () => {
-		// The back URL reaches the adapter through a slot, and a slot is only
-		// readable below the provider that supplies it. A host built in the
-		// component that renders that provider reads an empty bag instead, and
-		// closes to the default destination with no sign anything went wrong.
 		renderHost().close();
 
 		expect( leaveCheckout ).toHaveBeenCalledWith(
