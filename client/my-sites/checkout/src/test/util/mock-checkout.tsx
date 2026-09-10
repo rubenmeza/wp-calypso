@@ -6,6 +6,7 @@ import { PropsOf } from '@emotion/react';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Provider as ReduxProvider } from 'react-redux';
+import { CalypsoCheckoutSlots } from 'calypso/my-sites/checkout/src/components/calypso-checkout-slots';
 import CheckoutMain from 'calypso/my-sites/checkout/src/components/checkout-main';
 import {
 	mockGetCartEndpointWith,
@@ -24,6 +25,7 @@ export function MockCheckout( {
 	setCart,
 	useUndefinedSiteId,
 	checkoutHost,
+	preloadedState,
 }: {
 	initialCart: ResponseCart;
 	cartChanges?: Partial< ResponseCart >;
@@ -32,8 +34,10 @@ export function MockCheckout( {
 	useUndefinedSiteId?: boolean;
 	/** Mounts checkout under a host, the way a real checkout host does. */
 	checkoutHost?: CheckoutHostContext;
+	/** Redux slices the test needs seeded, such as the signup flow a shopper arrived on. */
+	preloadedState?: Record< string, unknown >;
 } ) {
-	const reduxStore = createTestReduxStore();
+	const reduxStore = createTestReduxStore( preloadedState );
 	const [ queryClient ] = useState( () => new QueryClient() );
 
 	const mockSetCartEndpoint = mockSetCartEndpointWith( {
@@ -50,13 +54,15 @@ export function MockCheckout( {
 			<QueryClientProvider client={ queryClient }>
 				<ShoppingCartProvider managerClient={ managerClient }>
 					<StripeHookProvider fetchStripeConfiguration={ fetchStripeConfiguration }>
-						<MaybeCheckoutHost host={ checkoutHost }>
-							<CheckoutMain
-								siteId={ useUndefinedSiteId ? undefined : siteId }
-								siteSlug="foo.com"
-								{ ...additionalProps }
-							/>
-						</MaybeCheckoutHost>
+						<CalypsoCheckoutSlots>
+							<MaybeCheckoutHost host={ checkoutHost }>
+								<CheckoutMain
+									siteId={ useUndefinedSiteId ? undefined : siteId }
+									siteSlug="foo.com"
+									{ ...additionalProps }
+								/>
+							</MaybeCheckoutHost>
+						</CalypsoCheckoutSlots>
 					</StripeHookProvider>
 				</ShoppingCartProvider>
 			</QueryClientProvider>
