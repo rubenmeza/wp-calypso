@@ -11,7 +11,6 @@ import {
 	clearSignupDestinationCookie,
 } from 'calypso/signup/storageUtils';
 import { useSelector, useDispatch } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { clearPurchases } from 'calypso/state/purchases/actions';
 import { fetchReceiptCompleted } from 'calypso/state/receipts/actions';
 import hasGravatarDomainQueryParam from 'calypso/state/selectors/has-gravatar-domain-query-param';
@@ -28,7 +27,8 @@ import { getSelectedSite, getSelectedSiteId } from 'calypso/state/ui/selectors';
 import { recordCompositeCheckoutErrorDuringAnalytics } from '../lib/analytics';
 import normalizeTransactionResponse from '../lib/normalize-transaction-response';
 import { absoluteRedirectThroughPending, redirectThroughPending } from '../lib/pending-page';
-import { useCheckoutCartKey } from './use-checkout-host-bridge';
+import { useCheckoutCartKey, useCheckoutRecordEvent } from './use-checkout-host-bridge';
+import type { CheckoutHostContext } from '@automattic/checkout';
 import type {
 	PaymentEventCallback,
 	PaymentEventCallbackArguments,
@@ -89,6 +89,7 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 	const cartKey = useCheckoutCartKey();
 	const { responseCart, reloadFromServer: reloadCart } = useShoppingCart( cartKey );
 	const reduxDispatch = useDispatch();
+	const recordEvent = useCheckoutRecordEvent();
 	const siteId = useSelector( getSelectedSiteId );
 	const selectedSiteData = useSelector( getSelectedSite );
 	const adminUrl = selectedSiteData?.options?.admin_url || wpAdminUrl;
@@ -197,7 +198,7 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 			) {
 				debug( 'fetching receipt' );
 				reduxDispatch( fetchReceiptCompleted( receiptId, transactionResult ) );
-				recordDomainBundlePurchasedEvents( responseCart, reduxDispatch );
+				recordDomainBundlePurchasedEvents( responseCart, recordEvent );
 			}
 
 			if ( siteId ) {
@@ -288,6 +289,7 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 			isComingFromUpsell,
 			isInModal,
 			reduxDispatch,
+			recordEvent,
 			siteId,
 			responseCart,
 			createUserAndSiteBeforeTransaction,
@@ -353,7 +355,7 @@ async function recordPaymentCompleteAnalytics( {
  */
 function recordDomainBundlePurchasedEvents(
 	responseCart: ResponseCart,
-	reduxDispatch: CalypsoDispatch
+	recordEvent: CheckoutHostContext[ 'recordEvent' ]
 ) {
 	const domainCountByBundle = new Map< string, number >();
 	for ( const product of responseCart.products ) {
@@ -365,11 +367,9 @@ function recordDomainBundlePurchasedEvents(
 	}
 
 	for ( const [ groupId, domainCount ] of domainCountByBundle ) {
-		reduxDispatch(
-			recordTracksEvent( 'calypso_domain_bundle_purchased', {
-				domain_bundle_group_id: groupId,
-				domain_count: domainCount,
-			} )
-		);
+		recordEvent( 'calypso_domain_bundle_purchased', {
+			domain_bundle_group_id: groupId,
+			domain_count: domainCount,
+		} );
 	}
 }
