@@ -3,6 +3,7 @@ import { CheckoutErrorBoundary } from '@automattic/composite-checkout';
 import { useTranslate } from 'i18n-calypso';
 import { getStripeConfiguration } from 'calypso/lib/store-transactions';
 import CalypsoShoppingCartProvider from 'calypso/my-sites/checkout/calypso-shopping-cart-provider';
+import { CalypsoCheckoutHost } from 'calypso/my-sites/checkout/src/components/calypso-checkout-host';
 import CheckoutMain from 'calypso/my-sites/checkout/src/components/checkout-main';
 import { useSelector } from 'calypso/state';
 import { getCurrentUserLocale, isUserLoggedIn } from 'calypso/state/current-user/selectors';
@@ -35,14 +36,16 @@ function ClientExpressCheckoutContent() {
 	);
 
 	return (
-		<CheckoutMain
-			sitelessCheckoutType="a4a"
-			redirectTo={ redirectTo }
-			customizedPreviousPath={ EXPRESS_CHECKOUT_REDIRECT_URL }
-			isLoggedOutCart={ ! userLoggedIn }
-			siteSlug=""
-			siteId={ 0 }
-		/>
+		<CalypsoCheckoutHost siteId={ 0 } siteSlug="">
+			<CheckoutMain
+				sitelessCheckoutType="a4a"
+				redirectTo={ redirectTo }
+				customizedPreviousPath={ EXPRESS_CHECKOUT_REDIRECT_URL }
+				isLoggedOutCart={ ! userLoggedIn }
+				siteSlug=""
+				siteId={ 0 }
+			/>
+		</CalypsoCheckoutHost>
 	);
 }
 

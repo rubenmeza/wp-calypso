@@ -4,6 +4,7 @@ import { useTranslate } from 'i18n-calypso';
 import A4ALogo from 'calypso/a8c-for-agencies/components/a4a-logo';
 import { getStripeConfiguration } from 'calypso/lib/store-transactions';
 import CalypsoShoppingCartProvider from 'calypso/my-sites/checkout/calypso-shopping-cart-provider';
+import { CalypsoCheckoutHost } from 'calypso/my-sites/checkout/src/components/calypso-checkout-host';
 import CheckoutMain from 'calypso/my-sites/checkout/src/components/checkout-main';
 import { useSelector } from 'calypso/state';
 import { getCurrentUserLocale } from 'calypso/state/current-user/selectors';
@@ -63,13 +64,15 @@ function ClientCheckoutContent() {
 					<A4ALogo full size={ 14 } />
 				</div>
 			</div>
-			<CheckoutMain
-				sitelessCheckoutType="a4a"
-				redirectTo={ redirectTo }
-				customizedPreviousPath="/client/subscriptions"
-				siteSlug=""
-				siteId={ 0 }
-			/>
+			<CalypsoCheckoutHost siteId={ 0 } siteSlug="">
+				<CheckoutMain
+					sitelessCheckoutType="a4a"
+					redirectTo={ redirectTo }
+					customizedPreviousPath="/client/subscriptions"
+					siteSlug=""
+					siteId={ 0 }
+				/>
+			</CalypsoCheckoutHost>
 		</div>
 	);
 }
