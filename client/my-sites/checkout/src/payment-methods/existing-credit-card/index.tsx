@@ -14,8 +14,7 @@ import {
 	SummaryLine,
 	SummaryDetails,
 } from 'calypso/my-sites/checkout/src/components/summary-details';
-import { useDispatch } from 'calypso/state';
-import { errorNotice } from 'calypso/state/notices/actions';
+import { useCheckoutNotices } from '../../hooks/use-checkout-host-bridge';
 import type { PaymentMethod, ProcessPayment } from '@automattic/composite-checkout';
 
 const debug = debugFactory( 'calypso:existing-card-payment-method' );
@@ -190,7 +189,7 @@ function ExistingCardPayButton( {
 		{ doNotFetch: ! isTaxInfoRequired }
 	);
 
-	const dispatch = useDispatch();
+	const notices = useCheckoutNotices();
 
 	// This must be typed as optional because it's injected by cloning the
 	// element in CheckoutSubmitButton, but the uncloned element does not have
@@ -207,9 +206,7 @@ function ExistingCardPayButton( {
 			onClick={ () => {
 				debug( 'submitting existing card payment' );
 				if ( isTaxInfoRequired && ! taxInfoFromServer?.is_tax_info_set ) {
-					dispatch(
-						errorNotice( getMissingTaxLocationInformationMessage( translate, taxInfoFromServer ) )
-					);
+					notices.error( getMissingTaxLocationInformationMessage( translate, taxInfoFromServer ) );
 				} else {
 					onClick( {
 						name: cardholderName,
