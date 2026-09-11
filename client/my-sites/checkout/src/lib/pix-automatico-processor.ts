@@ -48,13 +48,12 @@ export async function pixAutomaticoProcessor(
 		siteId,
 		includeDomainDetails,
 		includeGSuiteDetails,
-		reduxDispatch,
 		responseCart,
 		contactDetails,
 	} = options;
 	const paymentMethodId = 'pix_automatico';
 
-	reduxDispatch( recordTransactionBeginAnalytics( { paymentMethodId } ) );
+	recordTransactionBeginAnalytics( options, { paymentMethodId } );
 
 	if ( ! isValidBrazilianTaxId( submitData.document ) ) {
 		return makeErrorResponse(

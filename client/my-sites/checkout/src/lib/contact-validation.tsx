@@ -17,7 +17,6 @@ import { useTranslate } from 'i18n-calypso';
 import { getLocaleSlug } from 'calypso/lib/i18n-utils';
 import { login } from 'calypso/lib/paths';
 import { addQueryArgs } from 'calypso/lib/route';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import {
 	isCompleteAndValid,
 	prepareDomainContactValidationRequest,
@@ -25,6 +24,7 @@ import {
 	formatDomainContactValidationResponse,
 	getSignupValidationErrorResponse,
 } from '../types/wpcom-store-state';
+import type { CheckoutHostContext } from '@automattic/checkout';
 import type { RequestCartProduct, ResponseCart } from '@automattic/shopping-cart';
 import type {
 	ManagedContactDetails,
@@ -37,14 +37,13 @@ import type {
 	RawContactValidationResponseMessages,
 	ContactValidationResponseMessages,
 } from '@automattic/wpcom-checkout';
-import type { CalypsoDispatch } from 'calypso/state/types';
 import type { TranslateResult } from 'i18n-calypso';
 
 const debug = debugFactory( 'calypso:composite-checkout:contact-validation' );
 
 const getEmailTakenLoginRedirectMessage = (
 	emailAddress: string,
-	reduxDispatch: CalypsoDispatch,
+	recordEvent: CheckoutHostContext[ 'recordEvent' ],
 	translate: ReturnType< typeof useTranslate >
 ) => {
 	const { href, pathname } = window.location;
@@ -66,11 +65,9 @@ const getEmailTakenLoginRedirectMessage = (
 
 	const loginUrl = login( { redirectTo, emailAddress } );
 
-	reduxDispatch(
-		recordTracksEvent( 'calypso_checkout_wpcom_email_exists', {
-			email: emailAddress,
-		} )
-	);
+	recordEvent( 'calypso_checkout_wpcom_email_exists', {
+		email: emailAddress,
+	} );
 
 	return translate(
 		'That email address is already in use. If you have an existing account, {{a}}please log in{{/a}}.',
@@ -79,11 +76,9 @@ const getEmailTakenLoginRedirectMessage = (
 				a: (
 					<a
 						onClick={ () =>
-							reduxDispatch(
-								recordTracksEvent( 'calypso_checkout_composite_login_click', {
-									email: emailAddress,
-								} )
-							)
+							recordEvent( 'calypso_checkout_composite_login_click', {
+								email: emailAddress,
+							} )
 						}
 						href={ loginUrl }
 					/>
@@ -116,12 +111,12 @@ async function runContactValidationCheck(
 
 async function runLoggedOutEmailValidationCheck(
 	contactInfo: ManagedContactDetails,
-	reduxDispatch: CalypsoDispatch,
+	recordEvent: CheckoutHostContext[ 'recordEvent' ],
 	translate: ReturnType< typeof useTranslate >
 ): Promise< unknown > {
 	const email = contactInfo.email?.value ?? '';
 	return getSignupEmailValidationResult( email, ( newEmail: string ) =>
-		getEmailTakenLoginRedirectMessage( newEmail, reduxDispatch, translate )
+		getEmailTakenLoginRedirectMessage( newEmail, recordEvent, translate )
 	);
 }
 
@@ -132,18 +127,16 @@ export async function validateContactDetails(
 	showErrorMessageBriefly: ( message: string ) => void,
 	applyDomainContactValidationResults: ( results: ManagedContactDetailsErrors ) => void,
 	clearDomainContactErrorMessages: () => void,
-	reduxDispatch: CalypsoDispatch,
+	recordEvent: CheckoutHostContext[ 'recordEvent' ],
 	translate: ReturnType< typeof useTranslate >,
 	shouldDisplayErrors: boolean
 ): Promise< boolean > {
 	debug( 'validating contact details; shouldDisplayErrors', shouldDisplayErrors );
 
-	reduxDispatch(
-		recordTracksEvent( 'calypso_checkout_validating_contact_info', {
-			country: contactInfo.countryCode?.value,
-			postal: contactInfo.postalCode?.value,
-		} )
-	);
+	recordEvent( 'calypso_checkout_validating_contact_info', {
+		country: contactInfo.countryCode?.value,
+		postal: contactInfo.postalCode?.value,
+	} );
 
 	const completeValidationCheck = ( validationResult: unknown ): boolean => {
 		debug( 'validating contact details result', validationResult );
@@ -163,12 +156,10 @@ export async function validateContactDetails(
 			isContactValidationResponse( validationResult ) &&
 			! validationResult.success
 		) {
-			reduxDispatch(
-				recordTracksEvent( 'calypso_checkout_contact_info_validation_failed', {
-					country: contactInfo.countryCode?.value,
-					messages: validationResult.messages_simple?.join( ', ' ),
-				} )
-			);
+			recordEvent( 'calypso_checkout_contact_info_validation_failed', {
+				country: contactInfo.countryCode?.value,
+				messages: validationResult.messages_simple?.join( ', ' ),
+			} );
 		}
 		return isValid;
 	};
@@ -176,7 +167,7 @@ export async function validateContactDetails(
 	if ( isLoggedOutCart ) {
 		const loggedOutValidationResult = await runLoggedOutEmailValidationCheck(
 			contactInfo,
-			reduxDispatch,
+			recordEvent,
 			translate
 		);
 		if ( shouldDisplayErrors ) {
@@ -191,11 +182,9 @@ export async function validateContactDetails(
 
 		if ( ! isContactValidationResponseValid( loggedOutValidationResult ) ) {
 			if ( shouldDisplayErrors ) {
-				reduxDispatch(
-					recordTracksEvent( 'calypso_checkout_contact_email_validation_failed', {
-						country: contactInfo.countryCode?.value,
-					} )
-				);
+				recordEvent( 'calypso_checkout_contact_email_validation_failed', {
+					country: contactInfo.countryCode?.value,
+				} );
 			}
 			return false;
 		}
