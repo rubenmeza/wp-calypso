@@ -1,4 +1,5 @@
-import { PayPalConfigurationApiResponse, PayPalProvider } from '@automattic/calypso-paypal';
+import { fetchPayPalConfiguration } from '@automattic/api-core';
+import { PayPalProvider } from '@automattic/calypso-paypal';
 import {
 	useTogglePaymentMethod,
 	type PaymentMethod,
@@ -14,18 +15,13 @@ import {
 import { useI18n } from '@wordpress/react-i18n';
 import debugFactory from 'debug';
 import { useTranslate } from 'i18n-calypso';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { PayPalLogo } from 'calypso/dashboard/components/paypal-logo';
-import wp from 'calypso/lib/wp';
 import { PaymentMethodLogos } from '../components/payment-method-logos';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { convertErrorToString, logStashEvent } from '../lib/analytics';
 
 const debug = debugFactory( 'calypso:paypal-js' );
-
-async function fetchPayPalConfiguration(): Promise< PayPalConfigurationApiResponse > {
-	return await wp.req.get( '/me/paypal-configuration' );
-}
 
 export function createPayPal( {
 	hasExistingPayPalPPCPMethods,
@@ -86,10 +82,14 @@ function PayPalSubmitButtonWrapper( {
 } ) {
 	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
+	const fetchConfiguration = useCallback(
+		async () => ( { client_id: ( await fetchPayPalConfiguration() ).client_id } ),
+		[]
+	);
 	return (
 		<PayPalProvider
 			currency={ responseCart.currency }
-			fetchPayPalConfiguration={ fetchPayPalConfiguration }
+			fetchPayPalConfiguration={ fetchConfiguration }
 			handleError={ handlePayPalConfigurationError }
 		>
 			<PayPalSubmitButton disabled={ disabled } onClick={ onClick } />

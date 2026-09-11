@@ -35,7 +35,6 @@ const mockSharedDelete = requestPaymentMethodDeletion as jest.MockedFunction<
 	typeof requestPaymentMethodDeletion
 >;
 const mockLegacyGet = wp.req.get as jest.Mock;
-const mockLegacyPost = wp.req.post as jest.Mock;
 
 const savedCard: StoredPaymentMethodCard = {
 	stored_details_id: 'card-1',
@@ -83,7 +82,6 @@ function setSharedQueryFlag( enabled: boolean ) {
 describe( 'useCheckoutStoredPaymentMethods', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		mockLegacyGet.mockResolvedValue( [ savedCard ] );
 		mockSharedFetch.mockResolvedValue( [ savedCard ] );
 	} );
 
@@ -99,6 +97,7 @@ describe( 'useCheckoutStoredPaymentMethods', () => {
 		expect( mockLegacyGet ).not.toHaveBeenCalled();
 	} );
 
+	// Both reads share one fetcher, so the fetch count is what separates them.
 	it( 'reads the saved cards through the old read with the flag off', async () => {
 		setSharedQueryFlag( false );
 
@@ -106,12 +105,8 @@ describe( 'useCheckoutStoredPaymentMethods', () => {
 
 		await waitFor( () => expect( result.current.isLoading ).toBe( false ) );
 		expect( result.current.paymentMethods ).toEqual( [ savedCard ] );
-		expect( mockLegacyGet ).toHaveBeenCalledWith( '/me/payment-methods', {
-			type: 'card',
-			expired: 'exclude',
-			apiVersion: '1.2',
-		} );
-		expect( mockSharedFetch ).not.toHaveBeenCalled();
+		expect( mockSharedFetch ).toHaveBeenCalledWith( 'card', false );
+		expect( mockLegacyGet ).not.toHaveBeenCalled();
 	} );
 
 	it( 'fetches nothing at all when there is no logged-in user', async () => {
@@ -133,7 +128,6 @@ describe( 'useCheckoutStoredPaymentMethods', () => {
 			stored_details_id: 'card-2',
 			tax_location: { is_for_business: true },
 		};
-		mockLegacyGet.mockResolvedValue( [ savedCard, businessCard ] );
 		mockSharedFetch.mockResolvedValue( [ savedCard, businessCard ] );
 
 		for ( const flagOn of [ true, false ] ) {
@@ -155,7 +149,6 @@ describe( 'useCheckoutStoredPaymentMethods', () => {
 
 		for ( const flagOn of [ true, false ] ) {
 			setSharedQueryFlag( flagOn );
-			mockLegacyGet.mockResolvedValue( notAList );
 			mockSharedFetch.mockResolvedValue( notAList );
 
 			const { result } = renderCards();
@@ -207,12 +200,12 @@ describe( 'useCheckoutStoredPaymentMethods', () => {
 
 		it( 'refreshes the list through the old read with the flag off', async () => {
 			setSharedQueryFlag( false );
-			mockLegacyPost.mockResolvedValue( undefined );
+			mockSharedDelete.mockResolvedValue( undefined );
 
 			const { result } = renderCards();
 			await waitFor( () => expect( result.current.isLoading ).toBe( false ) );
 
-			mockLegacyGet.mockResolvedValue( [] );
+			mockSharedFetch.mockResolvedValue( [] );
 			await act( async () => {
 				await result.current.deletePaymentMethod( 'card-1' );
 			} );

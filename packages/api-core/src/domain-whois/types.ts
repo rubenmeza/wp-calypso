@@ -97,6 +97,19 @@ export type ContactValidationResponseMessages = {
 
 export type RawContactValidationResponseMessages = Record< string, string[] >;
 
+/**
+ * What a contact validation endpoint actually returns: failure messages keyed
+ * by a dotted path (`extra.uk.registrationNumber`) rather than nested. Callers
+ * that want the nested `DomainContactValidationResponse` reshape it themselves.
+ */
+export type RawDomainContactValidationResponse =
+	| { success: true }
+	| {
+			success: false;
+			messages: RawContactValidationResponseMessages;
+			messages_simple: string[];
+	  };
+
 export type DomainContactValidationResponse =
 	| { success: true }
 	| {

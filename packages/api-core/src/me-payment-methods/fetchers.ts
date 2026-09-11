@@ -1,5 +1,9 @@
 import { wpcom } from '../wpcom-fetcher';
-import type { StoredPaymentMethod, PaymentMethodRequestType } from './types';
+import type {
+	StoredPaymentMethod,
+	StoredPaymentMethodTaxInfo,
+	PaymentMethodRequestType,
+} from './types';
 
 export async function fetchUserPaymentMethods(
 	type: PaymentMethodRequestType,
@@ -10,6 +14,12 @@ export async function fetchUserPaymentMethods(
 		expired: expired ? 'include' : 'exclude',
 		apiVersion: '1.2',
 	} );
+}
+
+export async function fetchPaymentMethodTaxLocation(
+	paymentMethodId: string
+): Promise< StoredPaymentMethodTaxInfo > {
+	return await wpcom.req.get( `/me/payment-methods/${ paymentMethodId }/tax-location` );
 }
 
 export async function setPaymentMethodBackup(

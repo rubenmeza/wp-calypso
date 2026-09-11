@@ -283,6 +283,7 @@ __metadata:
   dependencies:
     "@automattic/calypso-typescript-config": "workspace:^"
     "@automattic/i18n-utils": "workspace:^"
+    "@automattic/js-utils": "workspace:^"
     "@automattic/languages": "workspace:^"
     "@automattic/shopping-cart": "workspace:^"
     "@wordpress/dataviews": "npm:^17.2.0"
@@ -2672,6 +2673,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@automattic/wpcom-checkout@workspace:packages/wpcom-checkout"
   dependencies:
+    "@automattic/api-core": "workspace:^"
     "@automattic/calypso-build": "workspace:^"
     "@automattic/calypso-config": "workspace:^"
     "@automattic/calypso-products": "workspace:^"

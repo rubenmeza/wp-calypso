@@ -11,6 +11,7 @@ import nock from 'nock';
 import { createStore, applyMiddleware } from 'redux';
 import { thunk } from 'redux-thunk';
 import { useExperiment } from 'calypso/lib/explat';
+import wpcom from 'calypso/lib/wp';
 import domainManagementReducer from 'calypso/state/domains/management/reducer';
 import noticesReducer from 'calypso/state/notices/reducer';
 import type { PricedAPIPlan, StorePlanSlug } from '@automattic/data-stores';
@@ -45,6 +46,9 @@ export const stripeConfiguration = {
 };
 
 export const processorOptions = {
+	// The same client the processors used to import directly, so the nocked
+	// endpoints these tests set up are still the ones they hit.
+	wpcom,
 	includeDomainDetails: false,
 	includeGSuiteDetails: false,
 	createUserAndSiteBeforeTransaction: false,

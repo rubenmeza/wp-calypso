@@ -30,7 +30,6 @@ const mockSharedFetch = fetchDomainContactInformation as jest.MockedFunction<
 	typeof fetchDomainContactInformation
 >;
 const mockLegacyGet = wp.req.get as jest.Mock;
-const mockLegacyPost = wp.req.post as jest.Mock;
 
 const savedContactDetails = {
 	first_name: 'Anna',
@@ -65,8 +64,6 @@ function renderContactDetails( { isLoggedOut }: { isLoggedOut?: boolean } = {} )
 beforeEach( () => {
 	jest.clearAllMocks();
 	mockSharedFetch.mockResolvedValue( savedContactDetails );
-	mockLegacyGet.mockResolvedValue( savedContactDetails );
-	mockLegacyPost.mockResolvedValue( undefined );
 } );
 
 describe( 'the cached contact details with the shared query', () => {
@@ -118,19 +115,20 @@ describe( 'the cached contact details with the flag off', () => {
 		mockIsEnabled.mockReturnValue( false );
 	} );
 
-	it( 'keeps autofilling from the older read', async () => {
+	// Both reads share one fetcher, so the fetch count is what separates them.
+	it( 'keeps autofilling from the older read, and only it fetches', async () => {
 		const { result } = renderContactDetails();
 
 		await waitFor( () => expect( result.current.details.contactDetails ).not.toBeNull() );
 
-		expect( mockLegacyGet ).toHaveBeenCalledWith( '/me/domain-contact-information' );
-		expect( mockSharedFetch ).not.toHaveBeenCalled();
+		expect( mockSharedFetch ).toHaveBeenCalledTimes( 1 );
+		expect( mockLegacyGet ).not.toHaveBeenCalled();
 	} );
 
 	it( 'fetches nothing for a logged-out shopper', async () => {
 		renderContactDetails( { isLoggedOut: true } );
 
-		await waitFor( () => expect( mockLegacyGet ).not.toHaveBeenCalled() );
+		await waitFor( () => expect( mockSharedFetch ).not.toHaveBeenCalled() );
 		expect( mockSharedFetch ).not.toHaveBeenCalled();
 	} );
 } );

@@ -54,7 +54,6 @@ function renderCountries< T >( hook: () => T ) {
 beforeEach( () => {
 	jest.clearAllMocks();
 	mockSharedFetch.mockResolvedValue( countries );
-	mockLegacyGet.mockResolvedValue( countries );
 } );
 
 describe( 'the country list with the shared query', () => {
@@ -100,16 +99,14 @@ describe( 'the country list with the flag off', () => {
 		mockIsEnabled.mockReturnValue( false );
 	} );
 
-	it( 'keeps coming from the older read', async () => {
+	// Both reads share one fetcher, so the fetch count is what separates them.
+	it( 'keeps coming from the older read, and only it fetches', async () => {
 		const { result } = renderCountries( () => useCheckoutCountryList() );
 
 		await waitFor( () => expect( result.current ).toHaveLength( 2 ) );
 
-		expect( mockLegacyGet ).toHaveBeenCalledWith(
-			expect.objectContaining( { path: '/me/transactions/supported-countries' } ),
-			undefined
-		);
-		expect( mockSharedFetch ).not.toHaveBeenCalled();
+		expect( mockSharedFetch ).toHaveBeenCalledTimes( 1 );
+		expect( mockLegacyGet ).not.toHaveBeenCalled();
 	} );
 
 	it( 'still knows which countries need a VAT id', async () => {
@@ -123,9 +120,7 @@ describe( 'the country list with the flag off', () => {
 	it( 'asks for the locale it was given', async () => {
 		renderCountries( () => useCheckoutCountryList( 'fr' ) );
 
-		await waitFor( () =>
-			expect( mockLegacyGet ).toHaveBeenCalledWith( expect.anything(), { locale: 'fr' } )
-		);
+		await waitFor( () => expect( mockSharedFetch ).toHaveBeenCalledWith( 'fr' ) );
 	} );
 } );
 
