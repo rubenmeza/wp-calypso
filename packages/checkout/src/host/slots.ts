@@ -59,16 +59,7 @@ export interface CheckoutVatDetailsManager {
 	setVatDetails: ( vatDetails: VatDetails ) => Promise< VatDetails >;
 }
 
-/**
- * The two reads that still need the legacy app when the flag is off.
- *
- * There were five candidates. Three of them — cached contact details, stored
- * payment methods and the countries list — turned out to need nothing: their
- * legacy halves reach the REST API and nothing else, so they take the client
- * off the host like any other read. Only these two reach into Calypso proper,
- * one for Redux and one for a `/me/purchases` module.
- * @deprecated Goes away with the `checkout/shared-foundation` flag.
- */
+/** @deprecated Goes away with the `checkout/shared-foundation` flag. */
 export interface CheckoutLegacyReadSlots {
 	/** The country on the Redux user record, which the geo query replaced. */
 	useUserCountryCode?: () => string | undefined;
