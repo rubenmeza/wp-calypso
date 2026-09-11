@@ -78,7 +78,8 @@ import { requestThenActivate } from 'calypso/state/themes/actions';
 import { getActiveTheme } from 'calypso/state/themes/selectors';
 import { IAppState } from 'calypso/state/types';
 import { getSelectedSiteId } from 'calypso/state/ui/selectors';
-import { logStashEvent } from '../src/lib/analytics';
+import { calypsoCheckoutLogError } from '../src/hooks/use-calypso-checkout-log-error';
+import { logStashEvent } from '../src/lib/error-logging';
 import CheckoutThankYouHeader from './header';
 import HundredYearThankYou from './hundred-year-thank-you';
 import MasterbarStyled from './redesign-v2/masterbar-styled';
@@ -252,7 +253,7 @@ export class CheckoutThankYou extends Component<
 				const params = [ 'trackCustom', 'BulkDomainTransfer', {} ];
 
 				debug( 'recordOrderInFacebookAds: WPCom Bulk Domain Transfer Purchase', params );
-				window.fbq && window.fbq( ...params );
+				window.fbq?.( ...params );
 			}
 
 			// Custom conversion for Twitter Ads.
@@ -853,6 +854,7 @@ function CheckoutThankYouWithReceipt( props: ComponentProps< typeof ConnectedChe
 	useEffect( () => {
 		if ( isError && error ) {
 			logStashEvent(
+				calypsoCheckoutLogError,
 				'checkout thank you receipt fetch error',
 				{
 					type: 'checkout_thank_you_receipt',

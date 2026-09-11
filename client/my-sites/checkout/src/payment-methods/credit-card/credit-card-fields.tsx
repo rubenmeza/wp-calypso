@@ -6,8 +6,9 @@ import { useI18n } from '@wordpress/react-i18n';
 import { Fragment, useState, useEffect, useRef } from 'react';
 import { LeftColumn, RightColumn } from 'calypso/my-sites/checkout/src/components/ie-fallback';
 import Spinner from 'calypso/my-sites/checkout/src/components/spinner';
+import { useCheckoutLogError } from 'calypso/my-sites/checkout/src/hooks/use-checkout-service-bridge';
 import { useMobileCheckoutStickySummaryExperiment } from 'calypso/my-sites/checkout/src/hooks/use-mobile-checkout-sticky-summary-experiment';
-import { logStashEvent } from 'calypso/my-sites/checkout/src/lib/analytics';
+import { logStashEvent } from 'calypso/my-sites/checkout/src/lib/error-logging';
 import { useDispatch as useReduxDispatch } from 'calypso/state';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import AssignToAllPaymentMethods from './assign-to-all-payment-methods';
@@ -83,6 +84,7 @@ export default function CreditCardFields( {
 		setForBusinessUse,
 	} = useDispatch( 'wpcom-credit-card' );
 	const reduxDispatch = useReduxDispatch();
+	const logError = useCheckoutLogError();
 
 	// We need the countryCode for the country specific payment fields which have
 	// no country selector but require country data during validation and submit
@@ -161,6 +163,7 @@ export default function CreditCardFields( {
 			if ( ! isStripeFullyLoaded && ! hasLoggedStripeLoadTimeoutRef.current ) {
 				hasLoggedStripeLoadTimeoutRef.current = true;
 				logStashEvent(
+					logError,
 					'calypso_checkout_stripe_element_load_timeout',
 					{
 						error_type: 'stripe_element_load_timeout',
@@ -174,9 +177,7 @@ export default function CreditCardFields( {
 						tags: [ 'checkout', 'stripe-elements', 'stripe-timeout' ],
 					},
 					'error'
-				).catch( () => {
-					// Silently fail if logstash logging fails
-				} );
+				);
 			}
 		}, 10000 );
 
@@ -185,7 +186,7 @@ export default function CreditCardFields( {
 				clearTimeout( stripeLoadTimeoutRef.current );
 			}
 		};
-	}, [ isStripeFullyLoaded, shouldUseEbanx, shouldShowContactFields ] );
+	}, [ isStripeFullyLoaded, logError, shouldUseEbanx, shouldShowContactFields ] );
 
 	// Render VGS form for Ebanx payments
 	if ( shouldUseEbanx && ! vgsFormError ) {

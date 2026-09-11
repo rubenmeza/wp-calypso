@@ -11,9 +11,10 @@ import { useState, useEffect } from '@wordpress/element';
 import { useI18n } from '@wordpress/react-i18n';
 import debugFactory from 'debug';
 import { useCheckoutNotices, useCheckoutRecordEvent } from '../../hooks/use-checkout-host-bridge';
+import { useCheckoutLogError } from '../../hooks/use-checkout-service-bridge';
 import { useVgsFormSubmit } from '../../hooks/use-vgs-form-submit';
 import { useVgsFormValidation } from '../../hooks/use-vgs-form-validation';
-import { logStashEvent } from '../../lib/analytics';
+import { logStashEvent } from '../../lib/error-logging';
 import { actions, selectors } from './store';
 import type { WpcomCreditCardSelectors } from './store';
 import type { CardFieldState, CardStoreType } from './types';
@@ -64,6 +65,7 @@ export default function CreditCardPayButton( {
 	const [ displayFieldsError, setDisplayFieldsError ] = useState( '' );
 	const notices = useCheckoutNotices();
 	const recordEvent = useCheckoutRecordEvent();
+	const logError = useCheckoutLogError();
 	useEffect( () => {
 		if ( displayFieldsError ) {
 			// The invalid fields live in the payment step, which may be scrolled
@@ -110,7 +112,7 @@ export default function CreditCardPayButton( {
 						recordEvent( 'calypso_checkout_card_missing_element', {
 							error: 'No card number element found on page when submtting form.',
 						} );
-						logStashEvent( 'calypso_checkout_card_missing_element', {
+						logStashEvent( logError, 'calypso_checkout_card_missing_element', {
 							error: 'No card number element found on page when submtting form.',
 						} );
 						return;
