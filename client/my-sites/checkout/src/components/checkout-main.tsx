@@ -21,8 +21,7 @@ import { getDashboardStepperLogo } from 'calypso/dashboard/app/stepper-logo';
 import { useCheckoutMigrationIntroductoryOfferSticker } from 'calypso/data/site-migration/use-checkout-migration-introductory-offer-sticker';
 import PageViewTracker from 'calypso/lib/analytics/page-view-tracker';
 import useSiteDomains from 'calypso/my-sites/checkout/src/hooks/use-site-domains';
-import { useSelector, useDispatch } from 'calypso/state';
-import hasGravatarDomainQueryParam from 'calypso/state/selectors/has-gravatar-domain-query-param';
+import { useDispatch } from 'calypso/state';
 import useActOnceOnStrings from '../hooks/use-act-once-on-strings';
 import useAddProductsFromUrl from '../hooks/use-add-products-from-url';
 import {
@@ -45,6 +44,7 @@ import {
 import { useCheckoutSiteFacts } from '../hooks/use-checkout-site-facts';
 import useCheckoutSiteSlug from '../hooks/use-checkout-site-slug';
 import { useCheckoutStoredPaymentMethods } from '../hooks/use-checkout-stored-payment-methods';
+import { useCheckoutHasGravatarDomainQueryParam } from '../hooks/use-checkout-surface';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import useCreatePaymentMethods from '../hooks/use-create-payment-methods';
 import { existingCardPrefix } from '../hooks/use-create-payment-methods/use-create-existing-cards';
@@ -170,7 +170,7 @@ export default function CheckoutMain( {
 		( site.isJetpack && ! site.isAtomic && ! site.isCommerceGarden ) ||
 		sitelessCheckoutType === 'jetpack';
 	const isPrivate = site.isPrivate;
-	const isGravatarDomain = useSelector( hasGravatarDomainQueryParam );
+	const isGravatarDomain = useCheckoutHasGravatarDomainQueryParam();
 	const cartKey = useCheckoutCartKey();
 	const getStripeConfiguration = useCheckoutStripeConfiguration();
 	const loadPaymentGateway = useCheckoutPaymentGatewayLoader();

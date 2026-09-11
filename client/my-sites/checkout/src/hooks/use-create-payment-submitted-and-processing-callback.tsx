@@ -13,7 +13,6 @@ import {
 import { useSelector, useDispatch } from 'calypso/state';
 import { clearPurchases } from 'calypso/state/purchases/actions';
 import { fetchReceiptCompleted } from 'calypso/state/receipts/actions';
-import hasGravatarDomainQueryParam from 'calypso/state/selectors/has-gravatar-domain-query-param';
 import isAtomicSite from 'calypso/state/selectors/is-site-automated-transfer';
 import { requestSite } from 'calypso/state/sites/actions';
 import { fetchSiteFeatures } from 'calypso/state/sites/features/actions';
@@ -29,6 +28,7 @@ import normalizeTransactionResponse from '../lib/normalize-transaction-response'
 import { absoluteRedirectThroughPending, redirectThroughPending } from '../lib/pending-page';
 import { useCheckoutCartKey, useCheckoutRecordEvent } from './use-checkout-host-bridge';
 import { useCheckoutLogError } from './use-checkout-service-bridge';
+import { useCheckoutHasGravatarDomainQueryParam } from './use-checkout-surface';
 import type { CheckoutHostContext } from '@automattic/checkout';
 import type {
 	PaymentEventCallback,
@@ -104,7 +104,7 @@ export default function useCreatePaymentSubmittedAndProcessingCallback( {
 					isSearchPluginActive( state, siteId ) ) &&
 				! isAtomicSite( state, siteId )
 		) || false;
-	const isGravatarDomain = useSelector( hasGravatarDomainQueryParam );
+	const isGravatarDomain = useCheckoutHasGravatarDomainQueryParam();
 	const adminPageRedirect = useSelector( ( state ) =>
 		getJetpackCheckoutRedirectUrl( state, siteId )
 	);

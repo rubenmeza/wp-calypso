@@ -1,14 +1,13 @@
 import { CheckoutStepBody } from '@automattic/composite-checkout';
 import { useTranslate } from 'i18n-calypso';
 import { useEffect } from 'react';
-import { useSelector } from 'calypso/state';
-import getPreviousPath from 'calypso/state/selectors/get-previous-path';
 import { useCheckoutRecordEvent } from '../hooks/use-checkout-host-bridge';
+import { useCheckoutPreviousPath } from '../hooks/use-checkout-surface';
 import type { ResponseCart } from '@automattic/shopping-cart';
 
 export function EmptyCart() {
 	const recordEvent = useCheckoutRecordEvent();
-	const previousPath = useSelector( getPreviousPath );
+	const previousPath = useCheckoutPreviousPath();
 	const referrer = window?.document?.referrer ?? '';
 	useEffect( () => {
 		recordEvent( 'calypso_checkout_empty_cart', {

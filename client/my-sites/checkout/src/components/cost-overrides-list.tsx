@@ -30,13 +30,12 @@ import { useTranslate } from 'i18n-calypso';
 import useEquivalentMonthlyTotals, {
 	getSimulatedCostBeforeDiscounts,
 } from 'calypso/my-sites/checkout/utils/use-equivalent-monthly-totals';
-import { useSelector } from 'calypso/state';
-import {
-	getIsOnboardingAffiliateFlow,
-	getIsOnboardingUnifiedFlow,
-} from 'calypso/state/signup/flow/selectors';
 import { getAffiliateCouponLabel } from '../../utils';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
+import {
+	useCheckoutIsOnboardingAffiliateFlow,
+	useCheckoutIsOnboardingUnifiedFlow,
+} from '../hooks/use-checkout-surface';
 import { CheckIcon } from './check-icon';
 import type { Theme } from '@automattic/composite-checkout';
 import type {
@@ -566,8 +565,8 @@ export function CouponCostOverride( {
 	const { formStatus } = useFormStatus();
 	const isDisabled = formStatus !== FormStatus.READY;
 	const isCartUpdating = FormStatus.VALIDATING === formStatus;
-	const isOnboardingAffiliateFlow = useSelector( getIsOnboardingAffiliateFlow );
-	const isOnboardingUnifiedFlow = useSelector( getIsOnboardingUnifiedFlow );
+	const isOnboardingAffiliateFlow = useCheckoutIsOnboardingAffiliateFlow();
+	const isOnboardingUnifiedFlow = useCheckoutIsOnboardingUnifiedFlow();
 	const isBFref =
 		typeof window !== 'undefined' &&
 		getQueryArg( window.location.href, 'ref' ) === 'black-friday-2025-lp';
