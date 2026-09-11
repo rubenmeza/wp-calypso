@@ -206,11 +206,15 @@ async function ebanxCardProcessor(
 		if ( ! submitData.vgsTokens ) {
 			throw new Error( 'VGS tokens are required for VGS checkout' );
 		}
-		ebanxTokenResponse = await createEbanxTokenVgs( 'new_purchase', {
-			country: submitData.countryCode,
-			name: submitData.name,
-			vgsTokens: submitData.vgsTokens,
-		} );
+		ebanxTokenResponse = await createEbanxTokenVgs(
+			'new_purchase',
+			{
+				country: submitData.countryCode,
+				name: submitData.name,
+				vgsTokens: submitData.vgsTokens,
+			},
+			transactionOptions
+		);
 		paymentMethodToken = ebanxTokenResponse;
 	} catch ( error ) {
 		debug( 'transaction failed' );

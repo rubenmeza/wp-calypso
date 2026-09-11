@@ -1,10 +1,11 @@
+import { createUserAccount } from '@automattic/api-core';
 import config from '@automattic/calypso-config';
 import i18n from 'i18n-calypso';
-import { recordGoogleRecaptchaAction } from 'calypso/lib/analytics/recaptcha';
 import { getLocaleSlug } from 'calypso/lib/i18n-utils';
 import getToSAcceptancePayload from 'calypso/lib/tos-acceptance-tracking';
 import wp from 'calypso/lib/wp';
 import { stringifyBody } from 'calypso/state/login/utils';
+import type { PaymentProcessorOptions } from './types/payment-processors';
 
 interface CreateAccountResponse {
 	success: boolean;
@@ -22,6 +23,14 @@ function isCreateAccountResponse( response: unknown ): response is CreateAccount
 	return true;
 }
 
+/** What creating an account needs from the host: the reCAPTCHA transport. */
+type AccountCreationServices = Pick< PaymentProcessorOptions, 'recordRecaptchaAction' >;
+
+/**
+ * Logging the new shopper in is Calypso's own business, not an API call: the
+ * bearer token is loaded into the client every later request goes through, the
+ * way the signup flows do it.
+ */
 async function createAccountCallback( response: CreateAccountResponse ): Promise< void > {
 	if ( ! response.bearer_token ) {
 		return;
@@ -49,12 +58,13 @@ export async function createAccount( {
 	email,
 	siteId,
 	recaptchaClientId,
+	recordRecaptchaAction,
 }: {
 	signupFlowName: string;
 	email: string | undefined;
 	siteId: number | undefined;
 	recaptchaClientId: number | undefined;
-} ): Promise< CreateAccountResponse > {
+} & AccountCreationServices ): Promise< CreateAccountResponse > {
 	let newSiteParams = null;
 	try {
 		newSiteParams = JSON.parse( window.localStorage.getItem( 'siteParams' ) || '{}' );
@@ -68,10 +78,7 @@ export async function createAccount( {
 	let recaptchaError = undefined;
 
 	if ( isRecaptchaLoaded ) {
-		recaptchaToken = await recordGoogleRecaptchaAction(
-			recaptchaClientId,
-			'calypso/signup/formSubmit'
-		);
+		recaptchaToken = await recordRecaptchaAction( recaptchaClientId, 'calypso/signup/formSubmit' );
 
 		if ( ! recaptchaToken ) {
 			recaptchaError = 'recaptcha_failed';
@@ -83,7 +90,7 @@ export async function createAccount( {
 	const blogName = newSiteParams?.blog_name;
 
 	try {
-		const response = await wp.req.post( '/users/new', {
+		const response = await createUserAccount( {
 			email,
 			'g-recaptcha-error': recaptchaError,
 			'g-recaptcha-response': recaptchaToken || undefined,

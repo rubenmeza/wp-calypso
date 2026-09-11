@@ -1,4 +1,9 @@
-import { validateTaxContactInformation } from '@automattic/api-core';
+import {
+	validateDomainContactInformation,
+	validateGSuiteContactInformation,
+	validateSignupUser,
+	validateTaxContactInformation,
+} from '@automattic/api-core';
 import {
 	getDomain,
 	isDomainTransfer,
@@ -12,7 +17,6 @@ import { useTranslate } from 'i18n-calypso';
 import { getLocaleSlug } from 'calypso/lib/i18n-utils';
 import { login } from 'calypso/lib/paths';
 import { addQueryArgs } from 'calypso/lib/route';
-import wp from 'calypso/lib/wp';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import {
 	isCompleteAndValid,
@@ -21,7 +25,6 @@ import {
 	formatDomainContactValidationResponse,
 	getSignupValidationErrorResponse,
 } from '../types/wpcom-store-state';
-import { isSharedFoundationEnabled } from './shared-foundation';
 import type { RequestCartProduct, ResponseCart } from '@automattic/shopping-cart';
 import type {
 	ManagedContactDetails,
@@ -280,18 +283,16 @@ async function wpcomValidateSignupEmail( {
 	email: string;
 	is_from_registrationless_checkout: boolean;
 } ): Promise< SignupValidationResponse > {
-	return wp.req
-		.post( '/signups/validation/user/', null, {
-			locale: getLocaleSlug(),
-			email,
-			is_from_registrationless_checkout,
-		} )
-		.then( ( data: unknown ) => {
-			if ( ! isSignupValidationResponse( data ) ) {
-				throw new Error( 'Signup validation returned unknown response.' );
-			}
-			return data;
-		} );
+	return validateSignupUser( {
+		locale: getLocaleSlug(),
+		email,
+		is_from_registrationless_checkout,
+	} ).then( ( data: unknown ) => {
+		if ( ! isSignupValidationResponse( data ) ) {
+			throw new Error( 'Signup validation returned unknown response.' );
+		}
+		return data;
+	} );
 }
 
 function convertValidationMessages(
@@ -334,47 +335,27 @@ function convertValidationResponse( rawResponse: unknown ): DomainContactValidat
 async function wpcomValidateTaxContactInformation(
 	contactInformation: ContactValidationRequestContactInformation
 ): Promise< DomainContactValidationResponse > {
-	if ( isSharedFoundationEnabled() ) {
-		return convertValidationResponse(
-			await validateTaxContactInformation( { contact_information: contactInformation } )
-		);
-	}
-
-	return wp.req
-		.post( { path: '/me/tax-contact-information/validate' }, undefined, {
-			contact_information: contactInformation,
-		} )
-		.then( convertValidationResponse );
+	return convertValidationResponse(
+		await validateTaxContactInformation( { contact_information: contactInformation } )
+	);
 }
 
 async function wpcomValidateDomainContactInformation(
 	contactInformation: ContactValidationRequestContactInformation,
 	domainNames: string[]
 ): Promise< DomainContactValidationResponse > {
-	return wp.req
-		.post(
-			{ path: '/me/domain-contact-information/validate' },
-			{
-				apiVersion: '1.2',
-			},
-			{
-				contact_information: contactInformation,
-				domain_names: domainNames,
-			}
-		)
-		.then( convertValidationResponse );
+	return validateDomainContactInformation( contactInformation, domainNames ).then(
+		convertValidationResponse
+	);
 }
 
 async function wpcomValidateGSuiteContactInformation(
 	contactInformation: ContactValidationRequestContactInformation,
 	domainNames: string[]
 ): Promise< DomainContactValidationResponse > {
-	return wp.req
-		.post( { path: '/me/google-apps/validate' }, undefined, {
-			contact_information: contactInformation,
-			domain_names: domainNames,
-		} )
-		.then( convertValidationResponse );
+	return validateGSuiteContactInformation( contactInformation, domainNames ).then(
+		convertValidationResponse
+	);
 }
 
 export async function getTaxValidationResult(
