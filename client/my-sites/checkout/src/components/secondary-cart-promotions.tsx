@@ -3,8 +3,7 @@ import { styled } from '@automattic/wpcom-checkout';
 import { FunctionComponent } from 'react';
 import CartFreeUserPlanUpsell from 'calypso/my-sites/checkout/cart/cart-free-user-plan-upsell';
 import UpcomingRenewalsReminder from 'calypso/my-sites/checkout/cart/upcoming-renewals-reminder';
-import { useSelector } from 'calypso/state';
-import { getSelectedSiteId } from 'calypso/state/ui/selectors';
+import { useCheckoutSelectedSiteId } from '../hooks/use-checkout-site-facts';
 import type { ResponseCart, MinimalRequestCartProduct } from '@automattic/shopping-cart';
 
 export type PartialCart = Partial< ResponseCart > & Pick< ResponseCart, 'products' >;
@@ -68,7 +67,7 @@ const SecondaryCartPromotions: FunctionComponent< Props > = ( {
 	addItemToCart,
 	isPurchaseRenewal,
 } ) => {
-	const selectedSiteId = useSelector( ( state ) => getSelectedSiteId( state ) );
+	const selectedSiteId = useCheckoutSelectedSiteId();
 
 	if (
 		config.isEnabled( 'upgrades/upcoming-renewals-notices' ) &&

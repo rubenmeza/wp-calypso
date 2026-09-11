@@ -43,8 +43,7 @@ import { isWcMobileApp } from 'calypso/lib/mobile-app';
 import useEquivalentMonthlyTotals, {
 	getSubtotalBeforeDiscounts,
 } from 'calypso/my-sites/checkout/utils/use-equivalent-monthly-totals';
-import { useSelector } from 'calypso/state';
-import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
+import { useCheckoutCurrentPlanSlug } from '../hooks/use-checkout-current-plan-slug';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import getAkismetProductFeatures from '../lib/get-akismet-product-features';
@@ -614,11 +613,7 @@ function CheckoutSummarySupportIfAvailable( props: {
 	const translate = useTranslate();
 	const hasEnTranslation = useHasEnTranslation();
 
-	const currentPlan = useSelector( ( state ) =>
-		props.siteId ? getCurrentPlan( state, props.siteId ) : undefined
-	);
-
-	const currentPlanSlug = currentPlan?.productSlug;
+	const currentPlanSlug = useCheckoutCurrentPlanSlug( props.siteId );
 
 	const isSupportAvailable =
 		props.hasDomainTransferInCart ||
@@ -636,7 +631,7 @@ function CheckoutSummarySupportIfAvailable( props: {
 		return (
 			<CheckoutSummaryFeaturesListItem>
 				<WPCheckoutCheckIcon />
-				{ isWpComPremiumPlan( currentPlanSlug )
+				{ isWpComPremiumPlan( currentPlanSlug ?? '' )
 					? translate( 'Fast support' )
 					: translate( 'Priority support 24/7' ) }
 			</CheckoutSummaryFeaturesListItem>
