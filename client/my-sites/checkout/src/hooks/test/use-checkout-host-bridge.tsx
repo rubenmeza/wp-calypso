@@ -4,6 +4,7 @@
 import { isEnabled } from '@automattic/calypso-config';
 import { CheckoutHostProvider } from '@automattic/checkout';
 import { renderHook } from '@testing-library/react';
+import { createTestCheckoutHost } from '../../test/util/checkout-host';
 import {
 	useCheckoutHostClose,
 	useCheckoutHostNavigate,
@@ -27,15 +28,10 @@ jest.mock( 'calypso/state', () => ( {
 
 const mockIsEnabled = isEnabled as jest.MockedFunction< typeof isEnabled >;
 
-const host: CheckoutHostContext = {
+const host: CheckoutHostContext = createTestCheckoutHost( {
 	siteId: 777,
-	navigate: jest.fn(),
-	close: jest.fn(),
-	onComplete: jest.fn(),
-	notices: { error: jest.fn(), info: jest.fn() },
 	urlParams: new URLSearchParams( 'from=host' ),
-	recordEvent: jest.fn(),
-};
+} );
 
 function withHost( { children }: { children: ReactNode } ) {
 	return <CheckoutHostProvider value={ host }>{ children }</CheckoutHostProvider>;

@@ -46,6 +46,8 @@
 	"dependencies": {
 		"@automattic/api-core": "workspace:^",
 		"@automattic/api-queries": "workspace:^",
+		"@automattic/calypso-stripe": "workspace:^",
+		"@automattic/shopping-cart": "workspace:^",
 		"@tanstack/react-query": "^5.83.0",
 		"tslib": "^2.8.1"
 	},
