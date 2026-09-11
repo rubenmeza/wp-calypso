@@ -40,12 +40,12 @@ import { useTranslate } from 'i18n-calypso';
 import * as React from 'react';
 import { hasFreeCouponTransfersOnly } from 'calypso/lib/cart-values/cart-items';
 import { isWcMobileApp } from 'calypso/lib/mobile-app';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import useEquivalentMonthlyTotals, {
 	getSubtotalBeforeDiscounts,
 } from 'calypso/my-sites/checkout/utils/use-equivalent-monthly-totals';
 import { useSelector } from 'calypso/state';
 import { getCurrentPlan } from 'calypso/state/sites/plans/selectors';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import getAkismetProductFeatures from '../lib/get-akismet-product-features';
 import getJetpackProductFeatures from '../lib/get-jetpack-product-features';
@@ -78,7 +78,7 @@ export function WPCheckoutOrderSummary( {
 	showFeaturesList?: boolean;
 } ) {
 	const { formStatus } = useFormStatus();
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const isCartUpdating = FormStatus.VALIDATING === formStatus;
 	return (
@@ -152,7 +152,7 @@ function TaxNotCalculatedLineItem() {
 }
 
 function CheckoutSummaryPriceList() {
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const creditsLineItem = getCreditsLineItemFromCart( responseCart );
 	const taxLineItems = getTaxBreakdownLineItemsFromCart( responseCart );
@@ -352,7 +352,7 @@ export function CheckoutSummaryFeaturesList( props: {
 } ) {
 	const { siteId, nextDomainIsFree } = props;
 
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const hasDomainsInCart = responseCart.products.some(
 		( product ) => isDomainProduct( product ) || isDomainTransfer( product )
@@ -568,7 +568,7 @@ function CheckoutSummaryPlanFeatures( props: {
 	const { hasDomainsInCart, nextDomainIsFree } = props;
 
 	const translate = useTranslate();
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const planInCart = responseCart.products.find( ( product ) => isPlan( product ) );
 	const hasRenewalInCart = responseCart.products.some(

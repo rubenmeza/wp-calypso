@@ -12,7 +12,7 @@ import { useTranslate } from 'i18n-calypso';
 import { Fragment } from 'react';
 import isAkismetCheckout from 'calypso/lib/akismet/is-akismet-checkout';
 import isJetpackCheckout from 'calypso/lib/jetpack/is-jetpack-checkout';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { useCheckoutUiRedesignExperiment } from '../hooks/use-checkout-ui-redesign-experiment';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import {
@@ -58,7 +58,7 @@ export default function ContactDetailsContainer( {
 } ) {
 	const translate = useTranslate();
 	const [ , isCheckoutUiRedesignV1 ] = useCheckoutUiRedesignExperiment();
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const domainNames: string[] = responseCart.products
 		.filter( ( product ) => isDomainProduct( product ) || isDomainTransfer( product ) )

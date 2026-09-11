@@ -18,7 +18,6 @@ import {
 } from '@automattic/wpcom-checkout';
 import { useRegistry } from '@wordpress/data';
 import { useMemo } from 'react';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
 import { CheckoutSubmitButtonContent } from '../../components/checkout-submit-button-content';
 import {
 	createCreditCardPaymentMethodStore,
@@ -32,6 +31,7 @@ import {
 	createPixAutomaticoPaymentMethod,
 } from '../../payment-methods/pix';
 import { createWeChatMethod } from '../../payment-methods/wechat';
+import { useCheckoutCartKey } from '../use-checkout-host-bridge';
 import useCreateExistingCards from './use-create-existing-cards';
 import useCreateExistingPayPalPPCP from './use-create-existing-paypal-ppcp';
 import type { StripeConfiguration, StripeLoadingError } from '@automattic/calypso-stripe';
@@ -404,7 +404,7 @@ export default function useCreatePaymentMethods( {
 	stripe: Stripe | null;
 	storedCards: StoredPaymentMethod[];
 } ): PaymentMethod[] {
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const { currency } = responseCart;
 

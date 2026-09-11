@@ -2,7 +2,7 @@ import { useShoppingCart } from '@automattic/shopping-cart';
 import styled from '@emotion/styled';
 import { useSelect } from '@wordpress/data';
 import { hasOnlyRenewalItems } from 'calypso/lib/cart-values/cart-items';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import { SummaryLine, SummaryDetails } from './summary-details';
 import type { ResponseCart } from '@automattic/shopping-cart';
@@ -28,7 +28,7 @@ export default function WPContactFormSummary( {
 	isLoggedOutCart: boolean;
 } ) {
 	const contactInfo = useSelect( ( select ) => select( CHECKOUT_STORE ).getContactInfo(), [] );
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const isRenewal = hasOnlyRenewalItems( responseCart );
 

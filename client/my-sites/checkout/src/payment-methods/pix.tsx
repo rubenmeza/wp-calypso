@@ -9,8 +9,8 @@ import {
 	STATE_SELECT_TEXT,
 } from 'calypso/components/domains/contact-details-form-fields/custom-form-fieldsets/utils';
 import { StateSelect } from 'calypso/my-sites/domains/components/form';
-import useCartKey from '../../use-cart-key';
 import { useCheckoutCachedContactDetails } from '../hooks/use-checkout-cached-contact-details';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import type { PaymentMethod, ProcessPayment } from '@automattic/composite-checkout';
 
 // We currently only show Pix for Brazil so we hard-code the country to avoid
@@ -113,7 +113,7 @@ function useSubscribeToEventEmitter( state: PixPaymentMethodState ) {
 }
 
 function usePrefillState( state: PixPaymentMethodState ): void {
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const isLoggedOut = responseCart.cart_key === 'no-user';
 	const { contactDetails } = useCheckoutCachedContactDetails( { isLoggedOut } );

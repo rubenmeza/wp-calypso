@@ -10,7 +10,7 @@ import {
 	hasTransferProduct,
 } from 'calypso/lib/cart-values/cart-items';
 import { getTopLevelOfTld } from 'calypso/lib/domains';
-import useCartKey from 'calypso/my-sites/checkout/use-cart-key';
+import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { VatForm } from './vat-form';
 import type { DomainContactDetails as DomainContactDetailsData } from '@automattic/shopping-cart';
 import type { DomainContactDetailsErrors } from '@automattic/wpcom-checkout';
@@ -34,7 +34,7 @@ export default function DomainContactDetails( {
 	isLoggedOutCart: boolean;
 	emailOnly?: boolean;
 } ) {
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart } = useShoppingCart( cartKey );
 	const needsOnlyGoogleAppsDetails =
 		hasGoogleApps( responseCart ) &&

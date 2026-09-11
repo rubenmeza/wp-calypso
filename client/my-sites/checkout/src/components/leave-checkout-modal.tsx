@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import getPreviousRoute from '../../../../state/selectors/get-previous-route';
-import useCartKey from '../../use-cart-key';
-import { useCheckoutHostClose } from '../hooks/use-checkout-host-bridge';
+import { useCheckoutHostClose, useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import useValidCheckoutBackUrl from '../hooks/use-valid-checkout-back-url';
 import { leaveCheckout } from '../lib/leave-checkout';
 
@@ -24,7 +23,7 @@ export const useCheckoutLeaveModal = ( { siteUrl }: { siteUrl: string } ) => {
 		undefined,
 		'checkoutBackUrlDomains'
 	);
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 	const { responseCart, replaceProductsInCart } = useShoppingCart( cartKey );
 	// Used to lazily clear the siteless 'no-site'/'no-user' carts used by
 	// signup steps before a site exists. /start/domain/domain-only adds the

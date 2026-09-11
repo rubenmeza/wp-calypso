@@ -4,8 +4,8 @@ import debugFactory from 'debug';
 import { useTranslate } from 'i18n-calypso';
 import { useEffect, useMemo, useReducer } from 'react';
 import { getCartProductByBillingIntentId } from 'calypso/data/marketplace/use-marketplace-billing-intents';
-import useCartKey from '../../use-cart-key';
 import getCartFromLocalStorage from '../lib/get-cart-from-local-storage';
+import { useCheckoutCartKey } from './use-checkout-host-bridge';
 import useStripProductsFromUrl from './use-strip-products-from-url';
 import type { RequestCartProduct, RequestCartProductExtra } from '@automattic/shopping-cart';
 import type { SitelessCheckoutType } from '@automattic/wpcom-checkout';
@@ -400,7 +400,7 @@ function useAddRenewalItems( {
 	isGiftPurchase?: boolean;
 } ) {
 	const translate = useTranslate();
-	const cartKey = useCartKey();
+	const cartKey = useCheckoutCartKey();
 
 	useEffect( () => {
 		if ( addHandler !== 'addRenewalItems' ) {
