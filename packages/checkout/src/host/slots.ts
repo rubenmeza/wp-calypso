@@ -16,6 +16,12 @@ import type { VatDetails } from '@automattic/wpcom-checkout';
  * want belongs on `CheckoutHostContext` or in a shared query instead.
  */
 export interface CheckoutHostSlots {
+	/* Where the checkout is running. Absent means "an ordinary WordPress.com
+	   checkout", which is what every branch behind these is written against. */
+	isJetpackCheckout?: () => boolean;
+	isAkismetCheckout?: () => boolean;
+	isWcMobileApp?: () => boolean;
+
 	/**
 	 * The reads the shared queries replaced.
 	 *

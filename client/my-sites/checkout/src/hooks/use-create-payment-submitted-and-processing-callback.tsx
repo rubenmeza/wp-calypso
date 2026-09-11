@@ -1,9 +1,9 @@
 import { useShoppingCart } from '@automattic/shopping-cart';
+import { hasEcommercePlan } from '@automattic/wpcom-checkout';
 import { isURL } from '@wordpress/url';
 import debugFactory from 'debug';
 import { useCallback } from 'react';
 import { recordPurchase } from 'calypso/lib/analytics/record-purchase';
-import { hasEcommercePlan } from 'calypso/lib/cart-values/cart-items';
 import getThankYouPageUrl from 'calypso/my-sites/checkout/get-thank-you-page-url';
 import useSiteDomains from 'calypso/my-sites/checkout/src/hooks/use-site-domains';
 import {

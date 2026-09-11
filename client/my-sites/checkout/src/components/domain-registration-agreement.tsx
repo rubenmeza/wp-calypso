@@ -1,11 +1,11 @@
-import { useTranslate } from 'i18n-calypso';
-import { Fragment } from 'react';
 import {
 	getDomainRegistrations,
 	getDomainTransfers,
 	hasDomainRegistration,
 	hasTransferProduct,
-} from 'calypso/lib/cart-values/cart-items';
+} from '@automattic/wpcom-checkout';
+import { useTranslate } from 'i18n-calypso';
+import { Fragment } from 'react';
 import CheckoutTermsItem from 'calypso/my-sites/checkout/src/components/checkout-terms-item';
 import { useCheckoutRecordGaEvent } from '../hooks/use-checkout-analytics-bridge';
 import type { DomainLegalAgreementUrl, ResponseCart } from '@automattic/shopping-cart';
