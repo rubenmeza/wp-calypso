@@ -2,10 +2,8 @@ import { useOptionalCheckoutHost } from '@automattic/checkout';
 import { useMemo } from 'react';
 import useCartKey from '../../use-cart-key';
 import { isSharedFoundationEnabled } from '../lib/shared-foundation';
-import {
-	useCalypsoCheckoutNotices,
-	useCalypsoCheckoutRecordEvent,
-} from './use-calypso-checkout-capabilities';
+import { useCalypsoCheckoutNotices } from './use-calypso-checkout-notices';
+import { useCalypsoCheckoutRecordEvent } from './use-calypso-checkout-record-event';
 import type { CheckoutHostContext, CheckoutNotices } from '@automattic/checkout';
 import type { CartKey } from '@automattic/shopping-cart';
 

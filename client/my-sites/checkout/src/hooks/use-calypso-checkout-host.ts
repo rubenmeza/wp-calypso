@@ -10,11 +10,9 @@ import { useSelector } from 'calypso/state';
 import getPreviousRoute from 'calypso/state/selectors/get-previous-route';
 import useCartKey from '../../use-cart-key';
 import { leaveCheckout } from '../lib/leave-checkout';
-import {
-	useCalypsoCheckoutNotices,
-	useCalypsoCheckoutRecordEvent,
-} from './use-calypso-checkout-capabilities';
 import { useCalypsoCheckoutLogError } from './use-calypso-checkout-log-error';
+import { useCalypsoCheckoutNotices } from './use-calypso-checkout-notices';
+import { useCalypsoCheckoutRecordEvent } from './use-calypso-checkout-record-event';
 import useValidCheckoutBackUrl from './use-valid-checkout-back-url';
 import type { CheckoutCloseOptions, CheckoutHostContext } from '@automattic/checkout';
 
