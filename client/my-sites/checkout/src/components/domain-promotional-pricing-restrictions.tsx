@@ -1,12 +1,12 @@
 import { DOMAIN_PROMOTIONAL_PRICING_POLICY } from '@automattic/urls';
-import { useTranslate } from 'i18n-calypso';
 import {
 	getDomainMappings,
 	getDomainRegistrations,
 	getDomainTransfers,
 	hasDomainRegistration,
 	hasTransferProduct,
-} from 'calypso/lib/cart-values/cart-items';
+} from '@automattic/wpcom-checkout';
+import { useTranslate } from 'i18n-calypso';
 import CheckoutTermsItem from 'calypso/my-sites/checkout/src/components/checkout-terms-item';
 import { useCheckoutRecordGaEvent } from '../hooks/use-checkout-analytics-bridge';
 import type { ResponseCart } from '@automattic/shopping-cart';

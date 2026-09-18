@@ -1,7 +1,7 @@
 import { PLAN_100_YEARS, getPlan } from '@automattic/calypso-products';
 import { localizeUrl } from '@automattic/i18n-utils';
+import { has100YearDomain, has100YearPlan } from '@automattic/wpcom-checkout';
 import { useTranslate } from 'i18n-calypso';
-import { has100YearDomain, has100YearPlan } from 'calypso/lib/cart-values/cart-items';
 import CheckoutTermsItem from './checkout-terms-item';
 import type { ResponseCart } from '@automattic/shopping-cart';
 

@@ -1,5 +1,5 @@
+import { getDomainRegistrations } from '@automattic/wpcom-checkout';
 import { useTranslate } from 'i18n-calypso';
-import { getDomainRegistrations } from 'calypso/lib/cart-values/cart-items';
 import CheckoutTermsItem from 'calypso/my-sites/checkout/src/components/checkout-terms-item';
 import type { ResponseCart } from '@automattic/shopping-cart';
 

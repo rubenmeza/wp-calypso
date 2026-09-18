@@ -1,7 +1,7 @@
 import { useShoppingCart } from '@automattic/shopping-cart';
+import { hasOnlyRenewalItems } from '@automattic/wpcom-checkout';
 import styled from '@emotion/styled';
 import { useSelect } from '@wordpress/data';
-import { hasOnlyRenewalItems } from 'calypso/lib/cart-values/cart-items';
 import { useCheckoutCartKey } from '../hooks/use-checkout-host-bridge';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import { SummaryLine, SummaryDetails } from './summary-details';
