@@ -3,12 +3,11 @@ import { getCountryPostalCodeSupport } from '@automattic/wpcom-checkout';
 import { useDispatch as useWordPressDataDispatch } from '@wordpress/data';
 import debugFactory from 'debug';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch as useReduxDispatch } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { convertErrorToString, logStashEvent } from '../lib/error-logging';
 import { CHECKOUT_STORE } from '../lib/wpcom-store';
 import { useCheckoutCachedContactDetails } from './use-checkout-cached-contact-details';
 import { useCheckoutCountryList } from './use-checkout-country-list';
+import { useCheckoutRecordEvent } from './use-checkout-host-bridge';
 import { useCheckoutLogError } from './use-checkout-service-bridge';
 import type { PossiblyCompleteDomainContactDetails } from '@automattic/wpcom-checkout';
 
@@ -20,7 +19,7 @@ function useCachedContactDetailsForCheckoutForm(
 	suppressScrollOnAutoComplete?: boolean
 ): boolean {
 	const countriesList = useCheckoutCountryList();
-	const reduxDispatch = useReduxDispatch();
+	const recordEvent = useCheckoutRecordEvent();
 	const logError = useCheckoutLogError();
 	const completeAllSteps = useCompleteAllSteps();
 	const suppressNextForwardScroll = useSuppressNextForwardScroll();
@@ -102,7 +101,7 @@ function useCachedContactDetailsForCheckoutForm(
 					return false;
 				}
 				if ( didSkip ) {
-					reduxDispatch( recordTracksEvent( 'calypso_checkout_skip_to_last_step' ) );
+					recordEvent( 'calypso_checkout_skip_to_last_step' );
 				}
 				setShouldShowContactDetailsValidationErrors?.( true );
 				setComplete( true );
@@ -128,7 +127,7 @@ function useCachedContactDetailsForCheckoutForm(
 			} );
 	}, [
 		setShouldShowContactDetailsValidationErrors,
-		reduxDispatch,
+		recordEvent,
 		logError,
 		completeAllSteps,
 		suppressNextForwardScroll,

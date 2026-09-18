@@ -10,10 +10,8 @@ import { useCallback, type FC, useMemo } from 'react';
 import PromoCard from 'calypso/components/promo-section/promo-card';
 import PromoCardCTA from 'calypso/components/promo-section/promo-card/cta';
 import { preventWidows } from 'calypso/lib/formatting';
-import { useDispatch } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { useGetProductVariants } from '../../hooks/product-variants';
-import { useCheckoutCartKey } from '../../hooks/use-checkout-host-bridge';
+import { useCheckoutCartKey, useCheckoutRecordEvent } from '../../hooks/use-checkout-host-bridge';
 import { getItemVariantDiscount } from '../item-variation-picker/util';
 
 import './style.scss';
@@ -34,7 +32,7 @@ const isJetpackAkismetProduct = ( product: ResponseCartProduct ) =>
 
 const useCurrentProductWithVariants = () => {
 	const cartKey = useCheckoutCartKey();
-	const reduxDispatch = useDispatch();
+	const recordEvent = useCheckoutRecordEvent();
 	const { responseCart, replaceProductInCart } = useShoppingCart( cartKey );
 	const product = responseCart.products.find( isJetpackAkismetProduct );
 	const variantsArray = useGetProductVariants( product );
@@ -48,19 +46,17 @@ const useCurrentProductWithVariants = () => {
 		}
 
 		debug( 'switching from', current.productSlug, 'to', biennial.productSlug );
-		reduxDispatch(
-			recordTracksEvent( 'calypso_jetpack_checkout_sidebar_upsell_click', {
-				upsell_type: 'biennial-plan',
-				switching_from: current.productSlug,
-				switching_to: biennial.productSlug,
-			} )
-		);
+		recordEvent( 'calypso_jetpack_checkout_sidebar_upsell_click', {
+			upsell_type: 'biennial-plan',
+			switching_from: current.productSlug,
+			switching_to: biennial.productSlug,
+		} );
 
 		replaceProductInCart( product.uuid, {
 			product_id: biennial.productId,
 			product_slug: biennial.productSlug,
 		} );
-	}, [ product, current, biennial, reduxDispatch, replaceProductInCart ] );
+	}, [ product, current, biennial, recordEvent, replaceProductInCart ] );
 
 	return {
 		product,

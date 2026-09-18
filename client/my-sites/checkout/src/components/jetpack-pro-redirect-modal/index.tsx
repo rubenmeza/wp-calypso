@@ -5,13 +5,13 @@ import { useTranslate } from 'i18n-calypso';
 import { useEffect } from 'react';
 import JetpackLogo from 'calypso/components/jetpack-logo';
 import { useDispatch, useSelector } from 'calypso/state';
-import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import {
 	JETPACK_DASHBOARD_CHECKOUT_REDIRECT_MODAL_DISMISSED as preferenceName,
 	getJetpackDashboardPreference as getPreference,
 } from 'calypso/state/jetpack-agency-dashboard/selectors';
 import { isAgencyUser } from 'calypso/state/partner-portal/partner/selectors';
 import { setPreference } from 'calypso/state/preferences/actions';
+import { useCheckoutRecordEvent } from '../../hooks/use-checkout-host-bridge';
 import { CheckIcon } from '../check-icon';
 
 import './style.scss';
@@ -24,18 +24,19 @@ interface Props {
 export default function JetpackProRedirectModal( { redirectTo, productSourceFromUrl }: Props ) {
 	const translate = useTranslate();
 	const dispatch = useDispatch();
+	const recordEvent = useCheckoutRecordEvent();
 
 	const isDismissed = useSelector( ( state ) => getPreference( state, preferenceName ) );
 
 	// Function to set the preference to dismiss the modal and record the event.
 	const dismissAndRecordEvent = () => {
 		dispatch( setPreference( preferenceName, true ) );
-		dispatch( recordTracksEvent( 'jetpack_dashboard_agency_checkout_redirect_modal_dismiss' ) );
+		recordEvent( 'jetpack_dashboard_agency_checkout_redirect_modal_dismiss' );
 	};
 
 	// Function to record the event when the user clicks on the redirect button.
 	const recordRedirectEvent = () => {
-		dispatch( recordTracksEvent( 'jetpack_dashboard_agency_checkout_redirect_modal_redirect' ) );
+		recordEvent( 'jetpack_dashboard_agency_checkout_redirect_modal_redirect' );
 	};
 
 	// Features list of Jetpack Manage.
@@ -59,7 +60,7 @@ export default function JetpackProRedirectModal( { redirectTo, productSourceFrom
 	// It is in a separate useEffect to avoid unecessary re-renders.
 	useEffect( () => {
 		if ( isAgencyPartner && ! isDismissed && isJetpackSource ) {
-			dispatch( recordTracksEvent( 'jetpack_dashboard_agency_checkout_redirect_modal_show' ) );
+			recordEvent( 'jetpack_dashboard_agency_checkout_redirect_modal_show' );
 		}
 		// We only want to run this once
 		// eslint-disable-next-line react-hooks/exhaustive-deps
