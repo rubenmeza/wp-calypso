@@ -19,6 +19,8 @@ export interface PaymentProcessorOptions {
 	recordRecaptchaAction: CheckoutHostContext[ 'recordRecaptchaAction' ];
 	/** Where a failed transaction is reported. */
 	logError: CheckoutHostContext[ 'logError' ];
+	/** Where a transaction's own analytics go. */
+	recordEvent: CheckoutHostContext[ 'recordEvent' ];
 	includeDomainDetails: boolean;
 	includeGSuiteDetails: boolean;
 	isAkismetSitelessCheckout: boolean;
