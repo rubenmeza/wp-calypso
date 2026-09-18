@@ -5,6 +5,7 @@ import {
 	isJetpackSite as isSharedSiteJetpack,
 } from '@automattic/checkout';
 import { useQuery } from '@tanstack/react-query';
+import { shallowEqual } from 'react-redux';
 import { useSelector } from 'calypso/state';
 import isPrivateSite from 'calypso/state/selectors/is-private-site';
 import isAtomicSite from 'calypso/state/selectors/is-site-automated-transfer';
@@ -96,7 +97,7 @@ export function useCheckoutSiteFacts(
 		}
 		const id = siteId ?? getSiteId( state, siteSlug ?? null );
 		return id ? factsFromRedux( state, id ) : noSite;
-	} );
+	}, shallowEqual );
 
 	// Callers know the site by its id or by its slug, depending on the route
 	// the checkout was opened from.
