@@ -1137,11 +1137,20 @@ export function getPlansItemsState(): PricedAPIPlan[] {
 	];
 }
 
-export function createTestReduxStore() {
+/**
+ * The store the checkout suites render against.
+ *
+ * `preloadedState` seeds slices the fixtures do not build, such as the signup
+ * flow a shopper arrived on. The reducer below overwrites `notices`, `plans`,
+ * `sites`, `siteSettings`, `ui`, `productsList`, `purchases`, `countries`,
+ * `domains` and `countryStates` on every action, so seeding one of those is
+ * discarded rather than honoured.
+ */
+export function createTestReduxStore( preloadedState = {} ) {
 	const rootReducer = ( state, action ) => {
 		return {
 			...state,
-			notices: noticesReducer( state, action ),
+			notices: noticesReducer( state?.notices, action ),
 			plans: {
 				items: getPlansItemsState(),
 			},
@@ -1260,7 +1269,7 @@ export function createTestReduxStore() {
 			countryStates: { items: stateList },
 		};
 	};
-	return createStore( rootReducer, applyMiddleware( thunk ) );
+	return createStore( rootReducer, preloadedState, applyMiddleware( thunk ) );
 }
 
 export function mockGetSupportedCountriesEndpoint( response: CountryListItem[], locale?: string ) {

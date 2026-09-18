@@ -4,7 +4,7 @@
 import { isEnabled } from '@automattic/calypso-config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
-import { CalypsoCheckoutSlots } from '../../test/util/checkout-slots';
+import { CalypsoCheckoutSlots } from '../../components/calypso-checkout-slots';
 import useDetectedCountryCode from '../use-detected-country-code';
 import type { ReactNode } from 'react';
 
